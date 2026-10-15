@@ -26,9 +26,10 @@ export type PythiaWalletClient = WalletClient<Transport, Chain, Account>;
 
 export const fuji = defineChain({
   id: config.chainId,
+  network: "fuji",
   name: chainMeta.name,
   nativeCurrency: chainMeta.currency,
-  rpcUrls: { default: { http: [config.rpcUrl] } },
+  rpcUrls: { default: { http: [config.rpcUrl] }, public: { http: [config.rpcUrl] } },
   blockExplorers: { default: { name: "Snowtrace", url: config.explorerUrl } },
 });
 
@@ -94,7 +95,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     if (w) {
       w.provider
         .request({ method: "eth_accounts" })
-        .then(async (accts) => {
+        .then(async (accts: unknown) => {
           const a = (accts as string[])[0];
           if (a) {
             setActive(w);
