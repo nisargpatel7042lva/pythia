@@ -1,0 +1,13 @@
+{
+  "network": "fuji",
+  "chainId": 43113,
+  "contract": "PythiaMarkets",
+  "address": "0xe21D7327eAd6E53AF7549Bd82942C03DF8c7eF44",
+  "owner": "0x637A24C97c8e8a3631c6bcdc4B5A62cF2Ca908b7",
+  "resolver": "0xa0338cBA659EE4f9bD92cE70811423610cC2BaC2",
+  "deployTx": "0xe095e96e5dae2f7704846ae4049f9e445cb30bb6a0229cf256b707335861aa4f",
+  "deployBlock": 59486591,
+  "deployedAt": "2026-10-15T05:54:19.537Z",
+  "explorer": "https://testnet.snowtrace.io/address/0xe21D7327eAd6E53AF7549Bd82942C03DF8c7eF44",
+  "chainlinkAvaxUsdFeed": "0x5498BB86BC934c8D34FDA08E81D444153d0D06aD"
+}

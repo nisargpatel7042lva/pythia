@@ -1,0 +1,23 @@
+{
+  "name": "pythia",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Private prediction markets on Avalanche. Bet sizes hidden with eERC.",
+  "workspaces": [
+    "contracts",
+    "packages/eerc-core",
+    "resolver",
+    "frontend"
+  ],
+  "scripts": {
+    "build:core": "npm run build -w @pythia/eerc-core",
+    "test:core": "npm run test:decrypt -w @pythia/eerc-core",
+    "build:frontend": "npm run build -w @pythia/frontend",
+    "resolver": "npm start -w @pythia/resolver",
+    "resolve": "npm run resolve -w @pythia/resolver --",
+    "test:resolver": "npm test -w @pythia/resolver"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

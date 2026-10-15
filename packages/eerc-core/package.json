@@ -1,0 +1,42 @@
+{
+  "name": "@pythia/eerc-core",
+  "version": "0.1.0",
+  "description": "Shared eERC crypto and client code (Node + browser), reused from PHANTOM.",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./package.json": "./package.json",
+    "./circuits/*": "./circuits/*"
+  },
+  "files": [
+    "dist",
+    "circuits",
+    "abis"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test:decrypt": "tsx scripts/test-decrypt.ts"
+  },
+  "dependencies": {
+    "@avalabs/ac-eerc-sdk": "^2.0.61",
+    "@zk-kit/baby-jubjub": "^1.0.3",
+    "ethers": "^6.17.0",
+    "maci-crypto": "^2.0.0",
+    "viem": "^1.21.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "tsup": "^8",
+    "tsx": "^4",
+    "typescript": "^5"
+  }
+}
