@@ -18,6 +18,10 @@ export function friendlyError(e: unknown): { message: string; code: UserError["c
   if (err?.code === 4001 || err?.code === "ACTION_REJECTED" || /user rejected|user denied|rejected the request|request rejected/i.test(raw)) {
     return { message: "You rejected the request in your wallet. Nothing was sent and no funds moved.", code: "REJECTED" };
   }
+  // The eERC SDK hides the wallet's rejection behind this generic message when deriving the key.
+  if (/failed to generate decryption key/i.test(raw)) {
+    return { message: "Your wallet signature is needed to unlock your private eERC key. It was not provided, so nothing was sent. Try again and approve the signature request.", code: "REJECTED" };
+  }
   if (err?.code === 4902 || /unrecognized chain|chain.*not (added|configured)|wrong network|chain mismatch|does not match the target chain/i.test(raw)) {
     return { message: "Your wallet is on a different network. Switch to Avalanche Fuji and try again.", code: "NETWORK" };
   }

@@ -46,6 +46,8 @@ interface WalletCtx {
   ensureNetwork(): Promise<void>;
   /** A viem wallet client whose signMessage is memoized for this session. */
   getWalletClient(): PythiaWalletClient;
+  /** The wallet's own error from the last failed signature, if any (cleared on read). */
+  takeSignError(): unknown;
 }
 
 const Ctx = createContext<WalletCtx | null>(null);
@@ -61,6 +63,12 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   const [connecting, setConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const sigCache = useRef(new Map<string, Promise<`0x${string}`>>());
+  const lastSignError = useRef<unknown>(null);
+  const takeSignError = useCallback(() => {
+    const e = lastSignError.current;
+    lastSignError.current = null;
+    return e;
+  }, []);
 
   const discover = useCallback(() => {
     const found = new Map<string, DiscoveredWallet>();
@@ -203,7 +211,10 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       if (!p) {
         p = sign(args as never) as Promise<`0x${string}`>;
         sigCache.current.set(key, p);
-        p.catch(() => sigCache.current.delete(key));
+        p.catch((e) => {
+          sigCache.current.delete(key);
+          lastSignError.current = e; // the SDK may rethrow a generic error; keep the wallet's own
+        });
       }
       return p;
     }) as never;
@@ -222,8 +233,9 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       disconnect,
       ensureNetwork,
       getWalletClient,
+      takeSignError,
     }),
-    [wallets, address, chainId, connecting, error, connect, disconnect, ensureNetwork, getWalletClient],
+    [wallets, address, chainId, connecting, error, connect, disconnect, ensureNetwork, getWalletClient, takeSignError],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

@@ -44,10 +44,18 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       const wc = wallet.getWalletClient();
       const core = await import("@pythia/eerc-core");
       const signer = { signMessage: (message: string) => wc.signMessage({ message }) };
-      const r = await core.resolveDecryptionKey(wc, signer, {
-        rpcUrl: config.rpcUrl,
-        addresses: { encryptedERC: config.addresses.encryptedERC, registrar: config.addresses.registrar, token: config.addresses.token },
-      });
+      // Ask for the signature directly first (it is memoized): if the user rejects, the wallet's
+      // own error reaches the UI instead of the SDK's generic "Failed to generate decryption key".
+      let r;
+      try {
+        await signer.signMessage(core.registrationMessage(wallet.address!));
+        r = await core.resolveDecryptionKey(wc, signer, {
+          rpcUrl: config.rpcUrl,
+          addresses: { encryptedERC: config.addresses.encryptedERC, registrar: config.addresses.registrar, token: config.addresses.token },
+        });
+      } catch (e) {
+        throw wallet.takeSignError() ?? e; // prefer the wallet's own error (e.g. user rejected)
+      }
       const s: EercSession = { address: wallet.address!, decryptionKey: r.decryptionKey, scheme: r.scheme, registered: r.registered };
       setSession(s);
       return s;
