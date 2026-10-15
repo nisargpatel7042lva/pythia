@@ -174,6 +174,15 @@ For contrast, a plain transfer shows its amount in the Value field:
 | Marked Settled | [0xeeddd3…fd58](https://testnet.snowtrace.io/tx/0xeeddd33d56df2a670617343ba68b84e4635e59cd55553f0c263fa208eea9fd58) |
 
 Payouts 3 and 4 survived two forced process kills (one mid-proof, one right after broadcast).
+Market 4 is a **price-feed** lifecycle, run end to end without any manual step: closed
+([tx](https://testnet.snowtrace.io/tx/0x0788ed49aacf34bcf2a2f2dcf51eee9f8947e63dfbb77579f9c607f18f614aef)),
+resolved from Chainlink ([tx](https://testnet.snowtrace.io/tx/0x49eb5cbba7d5f6e2ed2940832cb903699a0fc5bbf17ba9019b5cfd4a1b037297)),
+paid out in 4 private transfers
+([1](https://testnet.snowtrace.io/tx/0xe4f01f891404a6e371f62e1b0b15dd25efe48d765a0c640763612c3d437ee785) ·
+[2](https://testnet.snowtrace.io/tx/0xfa7d4e5caab1945193610678dbff403e7c2938d0361e068918c73958ab1fba44) ·
+[3](https://testnet.snowtrace.io/tx/0x3a0036a7a99609333191185aedea37902f0394380046c872d96e8c601cd4f970) ·
+[4](https://testnet.snowtrace.io/tx/0x3bd536286e1c1efb0d3dfdcefb6e642739c34f989dfe275e1817d301e4049721)),
+then [marked Settled](https://testnet.snowtrace.io/tx/0xcbd1bad6776a70c57359c39078c27c5fc1a641eb0a92233274c906cbbbaa08f0).
 Market 1 shows the cancel-and-refund path ([settled](https://testnet.snowtrace.io/tx/0x5e7b1832b3ec49a0c6f2aee687e36bf855b3e48867f88987af93a01153f57872)).
 
 ## Pre-existing work vs built during this Speedrun

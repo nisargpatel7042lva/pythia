@@ -155,3 +155,12 @@ npm install                                   # root, all workspaces
 npm run build -w @pythia/eerc-core            # tsup, ESM + CJS + d.ts
 TEST_PRIVATE_KEY=0x... npm run test:decrypt -w @pythia/eerc-core   # live Fuji decrypt check
 ```
+
+## Status (end of Phase 5)
+
+- Phases 1-5 complete on Fuji. Docs: README.md, DEMO_FLOW.md, MAINNET_READINESS.md.
+- Tests: 70 contract + 29 resolver (all pass in a fresh clone). eerc-core has live scripts only (test-decrypt, test-own-decrypt), no unit suite.
+- Frontend: all pages built; bet, portfolio decryption, admin and the six edge cases were exercised in a real browser with an injected test wallet.
+- Demo state on Fuji: market 2 (manual, settled), 3 (manual, open, bets + odds), 5 (AVAX/USD price feed, closes 2026-10-15 14:16 UTC), plus settled markets 1 (cancelled/refunded) and 4 (price feed).
+- Resolver env: POOL_GAS_FUND=0.02 is plenty (Fuji gas is ~free); a resolver wallet needs a little AVAX for pool funding.
+- Not built: threshold keys, decryption proofs, on-chain bet cutoff, mainnet (see MAINNET_READINESS.md).
