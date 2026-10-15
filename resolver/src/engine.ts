@@ -78,11 +78,39 @@ export class Engine {
   async tick() {
     await this.ledger.sync();
     const count = Number(await this.markets.getMarketCount());
+    await this.tagNewPools(count).catch((e) => this.logger.error(`tagging pools: ${(e as Error).message}`));
     for (let id = 0; id < count && !this.stopping; id++) {
       try {
         await this.processMarket(id);
       } catch (e) {
         this.logger.error(`market ${id}: ${(e as Error).message}`);
+      }
+    }
+  }
+
+  /** Number of distinct markets this keystore has pool accounts for. */
+  trackedMarkets(): number {
+    return new Set(this.keystore.list().filter((m) => m.marketId).map((m) => m.marketId)).size;
+  }
+
+  /**
+   * Pools created through the admin API have no market yet. Once the owner creates the market
+   * on-chain, find it by pool address and attach the pools to it.
+   */
+  private async tagNewPools(count: number) {
+    const metas = this.keystore.list();
+    const untagged = metas.filter((m) => !m.marketId);
+    if (untagged.length === 0) return;
+    const tagged = new Set(metas.filter((m) => m.marketId).map((m) => m.marketId));
+    for (let id = 0; id < count; id++) {
+      if (tagged.has(String(id))) continue;
+      const m = await this.markets.getMarket(id);
+      for (const [side, pool] of [["YES", m.yesPool], ["NO", m.noPool]] as const) {
+        const meta = untagged.find((u) => u.address.toLowerCase() === String(pool).toLowerCase());
+        if (meta) {
+          this.keystore.updateMeta(meta.address, { marketId: String(id), side });
+          this.logger.info(`market ${id}: attached ${side} pool ${meta.address}`);
+        }
       }
     }
   }

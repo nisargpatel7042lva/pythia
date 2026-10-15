@@ -3,17 +3,21 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "node scripts/copy-circuits.mjs",
     "dev": "next dev",
+    "prebuild": "node scripts/copy-circuits.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
     "@pythia/eerc-core": "*",
+    "dotenv": "^16.4.7",
     "ethers": "^6.17.0",
     "next": "14.2.35",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "viem": "^1.21.4"
   },
   "devDependencies": {
     "@types/node": "^20",

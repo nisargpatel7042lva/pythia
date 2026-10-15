@@ -1,3 +1,60 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  background: #070709;
+  color: #ececf3;
+}
+
+body {
+  font-family: var(--font-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  background-image:
+    radial-gradient(1100px 520px at 12% -8%, rgba(139, 92, 246, 0.16), transparent 60%),
+    radial-gradient(900px 480px at 100% 0%, rgba(212, 175, 55, 0.07), transparent 55%);
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+::selection {
+  background: rgba(139, 92, 246, 0.4);
+}
+
+@layer components {
+  .card {
+    @apply rounded-2xl border border-line bg-panel/80 backdrop-blur-sm;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition
+      disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet;
+  }
+  .btn-primary {
+    @apply btn bg-violet text-white shadow-glow hover:bg-violet-soft;
+  }
+  .btn-ghost {
+    @apply btn border border-line text-pearl hover:border-violet/60 hover:bg-raised;
+  }
+  .chip {
+    @apply inline-flex items-center rounded-full border border-line px-2.5 py-0.5 text-xs text-fog;
+  }
+  .field {
+    @apply w-full rounded-xl border border-line bg-raised px-3.5 py-2.5 text-sm text-pearl placeholder:text-fog/60
+      focus:border-violet focus:outline-none;
+  }
+  .label {
+    @apply mb-1.5 block text-xs uppercase tracking-wider text-fog;
+  }
+  .heading {
+    @apply font-serif font-semibold tracking-tight;
+  }
+  .num {
+    @apply font-mono tabular-nums;
+  }
+}
