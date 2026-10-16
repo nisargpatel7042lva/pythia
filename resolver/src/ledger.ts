@@ -138,7 +138,61 @@ export class Ledger {
       }
       start = end + 1;
       onChunkDone?.(end); // progress survives a later failure
-      if (start <= to) await new Promise((res) => setTimeout(res, 450)); // be gentle with public RPCs
+      // Be gentle with public RPCs (they ban clients that burst): pace only large catch-ups.
+      if (start <= to && to - from > 2000) await new Promise((res) => setTimeout(res, 900));
+    }
+    return { inserted, skipped };
+  }
+
+  /**
+   * Large gaps (after downtime): ask the block explorer for the pools' transfer logs over the whole
+   * range in one request per pool. Returns null if unavailable, so the caller falls back to
+   * walking the chain in paced windows. Rows are still verified by processLog (calldata decrypt),
+   * and the ledger/chain cross-check runs before anything is published or paid.
+   */
+  private async catchUpViaExplorer(from: number, to: number, pools: KnownPool[]): Promise<{ inserted: number; skipped: number } | null> {
+    if (!this.cfg.logsApiUrl) return null;
+    const topic0 = this.iface.getEvent("PrivateTransfer")!.topicHash;
+    const logs: ethers.Log[] = [];
+    try {
+      for (const p of pools) {
+        const q = new URLSearchParams({
+          module: "logs",
+          action: "getLogs",
+          fromBlock: String(from),
+          toBlock: String(to),
+          address: this.cfg.eerc.encryptedERC,
+          topic0,
+          topic2: ethers.zeroPadValue(p.meta.address, 32),
+          topic0_2_opr: "and",
+          apikey: "verifyContract",
+        });
+        const res = await fetch(`${this.cfg.logsApiUrl}?${q}`);
+        const j = (await res.json()) as { status: string; message: string; result: unknown };
+        if (j.status !== "1" && !/no records/i.test(String(j.message))) throw new Error(`explorer: ${j.message}`);
+        if (Array.isArray(j.result)) {
+          if (j.result.length >= 1000) throw new Error("explorer result truncated");
+          for (const l of j.result as { topics: string[]; data: string; blockNumber: string; transactionHash: string; logIndex: string }[]) {
+            logs.push({
+              topics: l.topics,
+              data: l.data,
+              transactionHash: l.transactionHash,
+              blockNumber: Number(l.blockNumber),
+              index: Number(l.logIndex),
+            } as unknown as ethers.Log);
+          }
+        }
+        await new Promise((res) => setTimeout(res, 300));
+      }
+    } catch (e) {
+      console.warn(`[ledger] explorer catch-up unavailable (${(e as Error).message}); falling back to paced RPC scan`);
+      return null;
+    }
+    let inserted = 0;
+    let skipped = 0;
+    for (const log of logs.sort((a, b) => a.blockNumber - b.blockNumber || a.index - b.index)) {
+      if (await this.processLog(log)) inserted++;
+      else skipped++;
     }
     return { inserted, skipped };
   }
@@ -155,7 +209,14 @@ export class Ledger {
       this.headTime = head.timestamp;
       return { from, to, inserted: 0, skipped: 0 };
     }
-    const r = await this.syncRange(from, to, (end) => this.setCursor(end));
+    let r: { inserted: number; skipped: number };
+    const viaApi = to - from > 3000 ? await this.catchUpViaExplorer(from, to, pools) : null;
+    if (viaApi) {
+      r = viaApi;
+      this.setCursor(to);
+    } else {
+      r = await this.syncRange(from, to, (end) => this.setCursor(end));
+    }
     this.headTime = head.timestamp; // all bets mined up to this block's time are now in the ledger
     return { from, to, ...r };
   }

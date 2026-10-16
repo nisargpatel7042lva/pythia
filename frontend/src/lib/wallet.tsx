@@ -8,6 +8,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { createWalletClient, custom, defineChain, type Account, type Chain, type Transport, type WalletClient } from "viem";
 import { chainMeta, config } from "@/config";
+import { friendlyError } from "@/lib/errors";
 
 export interface Eip1193 {
   request(args: { method: string; params?: unknown[] | object }): Promise<unknown>;
@@ -42,6 +43,9 @@ interface WalletCtx {
   error: string | null;
   connect(id?: string): Promise<void>;
   disconnect(): void;
+  dismissError(): void;
+  /** Re-run wallet discovery (extensions can announce late). */
+  refreshWallets(): DiscoveredWallet[];
   /** Switch (or add) Fuji; resolves once the wallet is on the right chain. */
   ensureNetwork(): Promise<void>;
   /** A viem wallet client whose signMessage is memoized for this session. */
@@ -79,8 +83,10 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     window.addEventListener("eip6963:announceProvider", onAnnounce);
     window.dispatchEvent(new Event("eip6963:requestProvider"));
     window.removeEventListener("eip6963:announceProvider", onAnnounce);
+    // EIP-6963 wallets are preferred; only fall back to window.ethereum when none announced
+    // (otherwise MetaMask would show up twice: once by name and once as "Browser wallet").
     const injected = (window as unknown as { ethereum?: Eip1193 }).ethereum;
-    if (injected && ![...found.values()].some((w) => w.provider === injected)) {
+    if (found.size === 0 && injected) {
       found.set("injected", { id: "injected", name: "Browser wallet", provider: injected });
     }
     const list = [...found.values()];
@@ -157,41 +163,56 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const connectingRef = useRef(false);
   const connect = useCallback(
     async (id?: string) => {
+      if (connectingRef.current) return; // ignore double clicks while a wallet prompt is open
+      connectingRef.current = true;
       setConnecting(true);
       setError(null);
       try {
         const list = discover();
         const w = list.find((x) => x.id === id) ?? list.find((x) => x.id === localStorage.getItem(LAST_KEY)) ?? list[0];
-        if (!w) throw new Error("No wallet found. Install MetaMask, Core or another EVM wallet.");
+        if (!w) throw new Error("No wallet found. Install MetaMask or Core, then reload this page.");
         const accts = (await w.provider.request({ method: "eth_requestAccounts" })) as string[];
-        if (!accts[0]) throw new Error("Wallet returned no account");
+        if (!accts[0]) throw new Error("Your wallet returned no account. Unlock it and try again.");
         setActive(w);
         setAddress(accts[0] as `0x${string}`);
         localStorage.setItem(LAST_KEY, w.id);
         let cid = Number(await w.provider.request({ method: "eth_chainId" }));
-        if (cid !== config.chainId) {
-          await switchToFuji(w.provider);
-          cid = Number(await w.provider.request({ method: "eth_chainId" }));
-        }
         setChainId(cid);
+        if (cid !== config.chainId) {
+          // Connected is connected: a refused network switch must not undo the connection.
+          try {
+            await switchToFuji(w.provider);
+            cid = Number(await w.provider.request({ method: "eth_chainId" }));
+            setChainId(cid);
+          } catch (e) {
+            setError(`Connected, but your wallet is not on Avalanche Fuji. ${friendlyError(e).message}`);
+          }
+        }
       } catch (e) {
-        setError((e as Error).message ?? "Could not connect");
+        setError(friendlyError(e).message);
       } finally {
+        connectingRef.current = false;
         setConnecting(false);
       }
     },
     [discover, switchToFuji],
   );
 
+  const dismissError = useCallback(() => setError(null), []);
+
   const disconnect = useCallback(() => {
+    // Best effort: also revoke the site's permission so the wallet really forgets this connection.
+    active?.provider.request({ method: "wallet_revokePermissions", params: [{ eth_accounts: {} }] }).catch(() => {});
     sigCache.current.clear();
     localStorage.removeItem(LAST_KEY);
     setActive(null);
     setAddress(null);
     setChainId(null);
-  }, []);
+    setError(null);
+  }, [active]);
 
   const ensureNetwork = useCallback(async () => {
     if (!active) throw new Error("Wallet not connected");
@@ -231,11 +252,13 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
       error,
       connect,
       disconnect,
+      dismissError,
+      refreshWallets: discover,
       ensureNetwork,
       getWalletClient,
       takeSignError,
     }),
-    [wallets, address, chainId, connecting, error, connect, disconnect, ensureNetwork, getWalletClient, takeSignError],
+    [wallets, address, chainId, connecting, error, connect, disconnect, dismissError, discover, ensureNetwork, getWalletClient, takeSignError],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

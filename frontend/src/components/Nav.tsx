@@ -3,10 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { friendlyError } from "@/lib/errors";
 import { useHealth, useOwner } from "@/lib/hooks";
-import { shortAddr } from "@/lib/format";
 import { useWallet } from "@/lib/wallet";
+import { WalletButton, WalletError } from "@/components/WalletButton";
 
 export function Logo() {
   return (
@@ -16,49 +15,6 @@ export function Logo() {
       </span>
       <span className="heading text-2xl tracking-[0.18em]">PYTHIA</span>
     </Link>
-  );
-}
-
-function WalletButton() {
-  const w = useWallet();
-  const [open, setOpen] = useState(false);
-  if (!w.address) {
-    return (
-      <div className="relative">
-        <button
-          className="btn-primary"
-          disabled={w.connecting}
-          onClick={async () => {
-            if (w.wallets.length > 1) setOpen((o) => !o);
-            else await w.connect();
-          }}
-        >
-          {w.connecting ? "Connecting…" : "Connect wallet"}
-        </button>
-        {open && (
-          <div className="card absolute right-0 z-30 mt-2 w-56 p-2">
-            {w.wallets.map((x) => (
-              <button key={x.id} className="btn-ghost mb-1 w-full justify-start" onClick={() => (setOpen(false), w.connect(x.id))}>
-                {x.name}
-              </button>
-            ))}
-          </div>
-        )}
-        {w.error && <p className="absolute right-0 mt-2 w-64 text-right text-xs text-no">{friendlyError({ message: w.error }).message}</p>}
-      </div>
-    );
-  }
-  return (
-    <div className="flex items-center gap-2">
-      {!w.onFuji && (
-        <button className="btn border border-gold/60 text-gold hover:bg-gold/10" onClick={() => w.ensureNetwork().catch(() => {})}>
-          Switch to Fuji
-        </button>
-      )}
-      <button className="btn-ghost num" onClick={w.disconnect} title="Disconnect">
-        {shortAddr(w.address)}
-      </button>
-    </div>
   );
 }
 
@@ -102,6 +58,7 @@ export function Nav() {
           </button>
         </div>
       </div>
+      <WalletError />
       {menu && (
         <nav className="flex flex-col gap-1 border-t border-line px-4 py-3 md:hidden">
           {links.map((l) => (

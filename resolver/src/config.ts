@@ -32,6 +32,11 @@ export interface BaseConfig {
   circuitsDir: string;
   /** AVAX sent to each new pool account for gas. */
   poolGasFund: string;
+  /**
+   * Etherscan-compatible block explorer API used to fetch logs across LARGE block gaps in a few
+   * requests (public RPCs cap eth_getLogs at ~100 blocks and ban bursty clients). Empty disables it.
+   */
+  logsApiUrl: string;
 }
 
 function marketsAddress(): `0x${string}` {
@@ -59,6 +64,7 @@ export function loadConfig(): BaseConfig {
     dbPath: abs(process.env.LEDGER_DB_PATH, "data/ledger.sqlite"),
     circuitsDir: path.join(coreDir, "circuits"),
     poolGasFund: process.env.POOL_GAS_FUND ?? "0.1",
+    logsApiUrl: process.env.LOGS_API_URL ?? "https://api.routescan.io/v2/network/testnet/evm/43113/etherscan/api",
   };
 }
 
