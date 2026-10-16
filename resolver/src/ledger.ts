@@ -46,7 +46,8 @@ export class Ledger {
   private provider: ethers.JsonRpcProvider;
   private iface = new ethers.Interface(ENCRYPTED_ERC_ABI);
   private known = new Map<string, KnownPool>();
-  private logChunk = 2000;
+  /** eth_getLogs window. Public Fuji RPC currently caps it at 100 blocks; shrinks further if needed. */
+  private logChunk = 100;
 
   constructor(
     private cfg: BaseConfig,
@@ -103,7 +104,7 @@ export class Ledger {
   }
 
   /** Process [from, to]; safe to call repeatedly over overlapping ranges. Returns counts. */
-  async syncRange(from: number, to: number): Promise<{ inserted: number; skipped: number }> {
+  async syncRange(from: number, to: number, onChunkDone?: (end: number) => void): Promise<{ inserted: number; skipped: number }> {
     const pools = await this.loadPools();
     let inserted = 0;
     let skipped = 0;
@@ -112,19 +113,32 @@ export class Ledger {
     const topic = this.iface.getEvent("PrivateTransfer")!.topicHash;
     const poolTopics = pools.map((p) => ethers.zeroPadValue(p.meta.address, 32));
 
-    for (let start = from; start <= to; start += this.logChunk) {
+    for (let start = from; start <= to; ) {
       const end = Math.min(start + this.logChunk - 1, to);
-      const logs = await this.provider.getLogs({
-        address: this.cfg.eerc.encryptedERC,
-        topics: [topic, null, poolTopics],
-        fromBlock: start,
-        toBlock: end,
-      });
+      let logs: ethers.Log[];
+      try {
+        logs = await this.provider.getLogs({
+          address: this.cfg.eerc.encryptedERC,
+          topics: [topic, null, poolTopics],
+          fromBlock: start,
+          toBlock: end,
+        });
+      } catch (e) {
+        // Public RPCs cap eth_getLogs ranges (and change the cap). Halve the window and retry.
+        if (/block range|range (is )?too (large|wide)|too many (results|blocks)|limit exceeded/i.test(String((e as Error).message)) && this.logChunk > 10) {
+          this.logChunk = Math.max(10, Math.floor(this.logChunk / 2));
+          continue;
+        }
+        throw e;
+      }
       for (const log of logs) {
         const r = await this.processLog(log);
         if (r) inserted++;
         else skipped++;
       }
+      start = end + 1;
+      onChunkDone?.(end); // progress survives a later failure
+      if (start <= to) await new Promise((res) => setTimeout(res, 450)); // be gentle with public RPCs
     }
     return { inserted, skipped };
   }
@@ -141,8 +155,7 @@ export class Ledger {
       this.headTime = head.timestamp;
       return { from, to, inserted: 0, skipped: 0 };
     }
-    const r = await this.syncRange(from, to);
-    this.setCursor(to);
+    const r = await this.syncRange(from, to, (end) => this.setCursor(end));
     this.headTime = head.timestamp; // all bets mined up to this block's time are now in the ledger
     return { from, to, ...r };
   }
@@ -218,6 +231,28 @@ export class Ledger {
       block: Number(r.block),
       blockTime: Number(r.block_time),
     }));
+  }
+
+  /**
+   * Transactions involving an address: bets it placed and payouts it received. Hashes only, so a
+   * client can fetch each transaction and decrypt its own amounts locally.
+   */
+  accountActivity(address: string): { kind: "bet" | "payout"; marketId: number; side: Side; txHash: string }[] {
+    const a = address.toLowerCase();
+    const out: { kind: "bet" | "payout"; marketId: number; side: Side; txHash: string }[] = [];
+    for (const r of this.db.prepare("SELECT market_id, side, tx_hash FROM bets WHERE lower(bettor) = ? ORDER BY block, log_index").all(a) as Record<string, string | number>[]) {
+      out.push({ kind: "bet", marketId: Number(r.market_id), side: r.side as Side, txHash: String(r.tx_hash) });
+    }
+    try {
+      for (const r of this.db
+        .prepare("SELECT market_id, from_side, tx_hash FROM payout_items WHERE lower(recipient) = ? AND status = 'confirmed' AND tx_hash IS NOT NULL ORDER BY market_id, seq")
+        .all(a) as Record<string, string | number>[]) {
+        out.push({ kind: "payout", marketId: Number(r.market_id), side: r.from_side as Side, txHash: String(r.tx_hash) });
+      }
+    } catch {
+      // payout tables do not exist until the first settlement
+    }
+    return out;
   }
 
   totals(marketId: number): { yes: bigint; no: bigint; count: number } {

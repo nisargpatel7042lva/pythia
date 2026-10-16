@@ -74,15 +74,29 @@ export class ChainExecutor implements PoolExecutor {
     const topic = iface.getEvent("PrivateTransfer")!.topicHash;
     const head = await this.provider.getBlockNumber();
     const meta = this.keystore.list().find((m) => m.address.toLowerCase() === pool.toLowerCase());
-    const from = meta?.createdBlock ?? Math.max(0, head - 50_000);
+    // Crash recovery happens soon after the crash: look at the recent past only (about 6,000
+    // blocks), in small windows because public RPCs cap eth_getLogs ranges.
+    const from = Math.max(meta?.createdBlock ?? 0, head - 6000);
     let found: string | null = null;
-    for (let start = from; start <= head; start += 2000) {
-      const logs = await this.provider.getLogs({
-        address: this.cfg.eerc.encryptedERC,
-        topics: [topic, ethers.zeroPadValue(pool, 32), ethers.zeroPadValue(to, 32)],
-        fromBlock: start,
-        toBlock: Math.min(start + 1999, head),
-      });
+    let chunk = 100;
+    for (let start = from; start <= head; ) {
+      const end = Math.min(start + chunk - 1, head);
+      let logs: ethers.Log[];
+      try {
+        logs = await this.provider.getLogs({
+          address: this.cfg.eerc.encryptedERC,
+          topics: [topic, ethers.zeroPadValue(pool, 32), ethers.zeroPadValue(to, 32)],
+          fromBlock: start,
+          toBlock: end,
+        });
+      } catch (e) {
+        if (/block range|too large|too many|limit exceeded/i.test(String((e as Error).message)) && chunk > 10) {
+          chunk = Math.max(10, Math.floor(chunk / 2));
+          continue;
+        }
+        throw e;
+      }
+      start = end + 1;
       for (const l of logs) if (!exclude.has(l.transactionHash)) found = l.transactionHash;
     }
     return found;

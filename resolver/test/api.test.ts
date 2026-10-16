@@ -17,6 +17,13 @@ function makeDeps(over: Partial<ApiDeps> = {}): ApiDeps {
   return {
     activity: {
       headTime: NOW - 7,
+      accountActivity: (a) =>
+        a.toLowerCase() === "0x" + "ab".repeat(20)
+          ? [
+              { kind: "bet", marketId: 5, side: "YES", txHash: "0xt1", amount: SECRET_AMOUNTS[0] } as never,
+              { kind: "payout", marketId: 5, side: "NO", txHash: "0xt9", amount: SECRET_AMOUNTS[1] } as never,
+            ]
+          : [],
       bets: (id) =>
         id === 5
           ? [
@@ -65,6 +72,16 @@ test("activity exposes bettor and side but NEVER an amount", () =>
     assert.deepEqual(Object.keys(j.bets[0]).sort(), ["bettor", "block", "blockTime", "side", "txHash"]);
     assert.ok(!/amount/i.test(text), "no amount field");
     for (const a of SECRET_AMOUNTS) assert.ok(!text.includes(a.toString()), `amount ${a} leaked`);
+  }));
+
+test("account activity lists tx hashes for an address and never an amount", () =>
+  withServer(makeDeps(), async (base) => {
+    const text = await (await fetch(`${base}/accounts/0x${"ab".repeat(20)}/activity`)).text();
+    const j = JSON.parse(text);
+    assert.deepEqual(j.items.map((i: { kind: string; txHash: string }) => [i.kind, i.txHash]), [["bet", "0xt1"], ["payout", "0xt9"]]);
+    assert.ok(!/amount/i.test(text));
+    for (const a of SECRET_AMOUNTS) assert.ok(!text.includes(a.toString()), `amount ${a} leaked`);
+    assert.equal((await fetch(`${base}/accounts/not-an-address/activity`)).status, 404);
   }));
 
 test("activity for an unknown market is an empty list", () =>

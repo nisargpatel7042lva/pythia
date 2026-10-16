@@ -215,5 +215,5 @@ transactions that were executed and verified, not simulated.
 ## Known limitations
 
 - Testnet only; unaudited; the resolver is a single trusted party (see Trust model).
-- Public Fuji RPC is occasionally slow; the app and resolver retry.
+- The public Fuji RPC is slow, rate-limits, and currently caps eth_getLogs at 100 blocks per call. The resolver shrinks its log window automatically, saves ledger progress after every chunk, and the portfolio uses the resolver index instead of scanning logs. After downtime the ledger needs a while to catch up; use a dedicated RPC for anything serious.
 - The built-in test wallet used in development is not part of the product.

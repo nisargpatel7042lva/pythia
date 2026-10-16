@@ -28,7 +28,7 @@ export default function PortfolioPage() {
       const [ms, d] = await Promise.all([fetchMarkets(), fetchDecimals()]);
       setMarkets(new Map(ms.map((m) => [m.id, m])));
       setDec(d.eerc);
-      const r = await loadPortfolio({ session, walletClient: w.getWalletClient(), markets: ms, onProgress: setStatus });
+      const r = await loadPortfolio({ session, walletClient: w.getWalletClient(), onProgress: setStatus });
       setRows(r);
     } catch (e) {
       setError(friendlyError(e));

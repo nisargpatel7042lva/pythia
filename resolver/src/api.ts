@@ -20,6 +20,8 @@ export interface ActivitySource {
   /** May carry amounts internally; the API never forwards them. */
   bets(marketId: number): { bettor: string; side: Side; txHash: string; block: number; blockTime: number; amount?: bigint }[];
   headTime: number;
+  /** Hashes of bets placed and payouts received by an address (never amounts). */
+  accountActivity(address: string): { kind: "bet" | "payout"; marketId: number; side: Side; txHash: string }[];
 }
 
 export interface ApiDeps {
@@ -98,6 +100,12 @@ export function createApiServer(deps: ApiDeps): http.Server {
           blockTime: b.blockTime,
         }));
         return send(res, 200, { marketId, count: bets.length, bets });
+      }
+
+      const acct = /^\/accounts\/(0x[0-9a-fA-F]{40})\/activity$/.exec(url.pathname);
+      if (req.method === "GET" && acct) {
+        const items = deps.activity.accountActivity(acct[1]).map((i) => ({ kind: i.kind, marketId: i.marketId, side: i.side, txHash: i.txHash }));
+        return send(res, 200, { address: acct[1], items });
       }
 
       if (req.method === "POST" && url.pathname === "/admin/pools") {

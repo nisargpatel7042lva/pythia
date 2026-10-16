@@ -18,6 +18,10 @@ async function getJson<T>(path: string): Promise<T> {
 export const fetchActivity = (marketId: number) =>
   getJson<{ marketId: number; count: number; bets: ActivityBet[] }>(`/markets/${marketId}/activity`);
 
+/** Which transactions involve this address (hashes only; amounts are decrypted locally). */
+export const fetchAccountActivity = (address: string) =>
+  getJson<{ address: string; items: { kind: "bet" | "payout"; marketId: number; side: "YES" | "NO"; txHash: string }[] }>(`/accounts/${address}/activity`);
+
 export interface Health {
   ok: boolean;
   resolver: string;
