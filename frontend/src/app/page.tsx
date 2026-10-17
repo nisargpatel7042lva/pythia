@@ -142,13 +142,13 @@ export default function Landing() {
       {/* ── HERO: sage, ruled, like the reference ───────────────────────── */}
       <section className="bg-sage text-ink">
         <Frame tone="sage">
-          <div className="grid lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
+          <div className="grid lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
             <div className="relative flex min-h-[560px] flex-col justify-between border-b border-ink p-6 sm:p-10 lg:min-h-[680px] lg:border-b-0 lg:border-r">
               <div>
                 <p className="tag mb-8 flex items-center gap-3 animate-rise">
                   <span className="h-2 w-2 bg-ink" /> Private prediction markets
                 </p>
-                <h1 className="display animate-rise text-[clamp(40px,5.3vw,86px)]" style={{ animationDelay: "80ms" }}>
+                <h1 className="display animate-rise leading-[1.12] text-[clamp(36px,4.3vw,68px)]" style={{ animationDelay: "80ms" }}>
                   On Polymarket, your bet size is{" "}
                   <span className="text-transparent [-webkit-text-stroke:2px_#0B1112]">public.</span>{" "}
                   <br className="hidden sm:block" />
@@ -179,8 +179,8 @@ export default function Landing() {
                 <div className="draw-x absolute inset-x-0 top-1/3 h-px bg-ink/70" />
                 <div className="draw-y absolute inset-y-0 left-1/3 w-px bg-ink/70" />
                 <div className="draw-y absolute inset-y-0 right-1/4 w-px bg-ink/70" style={{ animationDelay: "150ms" }} />
-                <div className="animate-rise" style={{ animationDelay: "300ms" }}>
-                  <Logomark size={210} className="text-ink drop-shadow-none" />
+                <div className="relative z-10 animate-rise border border-ink bg-sage p-10 sm:p-14" style={{ animationDelay: "300ms" }}>
+                  <Logomark size={150} className="text-ink" />
                 </div>
               </div>
               <Spec

@@ -1,8 +1,7 @@
 import Link from "next/link";
 
 /**
- * The PYTHIA mark: an isometric "P" built from slabs. The small block inside the bowl is a
- * redaction: the bet amount that never leaves the browser in the clear.
+ * The PYTHIA mark: an isometric "P" built from slabs.
  * Drawn on a 120 x 124 grid; uses currentColor so it works on sage, ink or bone.
  */
 export function Logomark({ size = 28, className = "" }: { size?: number; className?: string }) {
@@ -12,7 +11,6 @@ export function Logomark({ size = 28, className = "" }: { size?: number; classNa
       <polygon points="112,6 112,52 90,74 90,28" />
       <polygon points="32,52 112,52 90,74 10,74" />
       <polygon points="10,74 32,52 32,96 10,118" />
-      <polygon points="44,32 74,32 68,48 38,48" />
     </svg>
   );
 }

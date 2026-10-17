@@ -96,16 +96,16 @@ body {
 /* the headline redaction: an ink highlight that sweeps in and wraps across lines */
 @keyframes redactBg {
   from {
-    background-size: 0% 100%;
+    background-size: 0% 76%;
   }
   to {
-    background-size: 100% 100%;
+    background-size: 100% 76%;
   }
 }
 .redact-title {
-  background: linear-gradient(var(--ink), var(--ink)) no-repeat left center / 100% 100%;
+  background: linear-gradient(var(--ink), var(--ink)) no-repeat left center / 100% 76%;
   color: var(--sage);
-  padding: 0 0.22em;
+  padding: 0.02em 0.22em;
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
   animation: redactBg 0.8s cubic-bezier(0.7, 0, 0.2, 1) 0.5s both;

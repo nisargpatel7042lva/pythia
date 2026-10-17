@@ -116,8 +116,8 @@ export function Footer() {
             </p>
           </div>
         </div>
-        <div className="select-none overflow-hidden px-2 pt-6 text-center" aria-hidden="true">
-          <span className="display block text-[20vw] leading-[0.78] text-sage/[0.16] min-[1440px]:text-[290px]">PYTHIA</span>
+        <div className="select-none px-4 pb-8 pt-12 text-center" aria-hidden="true">
+          <span className="block font-display text-[16vw] font-extrabold leading-[1.05] tracking-[0.01em] text-sage/[0.14] min-[1440px]:text-[230px]">PYTHIA</span>
         </div>
       </Frame>
     </footer>
