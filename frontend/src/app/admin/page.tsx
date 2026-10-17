@@ -2,6 +2,8 @@
 
 import { ethers } from "ethers";
 import { useState } from "react";
+import { Frame } from "@/components/Nav";
+import { PageHead } from "@/components/Page";
 import { Banner, Spinner, TxLink } from "@/components/ui";
 import { config } from "@/config";
 import marketsAbi from "@/abi/PythiaMarkets.abi.json";
@@ -29,9 +31,10 @@ export default function AdminPage() {
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<{ id: number; hash: string } | null>(null);
 
-  if (!w.address) return <Banner>Connect the owner wallet to continue.</Banner>;
-  if (owner.loading && !owner.data) return <p className="text-sm text-fog">Checking permissions…</p>;
-  if (!isOwner) return <Banner tone="warn">This page is only available to the contract owner.</Banner>;
+  const gate = (c: React.ReactNode) => (<><PageHead tag="Owner only" title="Create market" /><Frame><div className="p-6 sm:p-10">{c}</div></Frame></>);
+  if (!w.address) return gate(<Banner>Connect the owner wallet to continue.</Banner>);
+  if (owner.loading && !owner.data) return gate(<p className="text-sm text-fog">Checking permissions…</p>);
+  if (!isOwner) return gate(<Banner tone="warn">This page is only available to the contract owner.</Banner>);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -80,10 +83,7 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl">
-      <h1 className="heading text-5xl">Create market</h1>
-      <p className="mt-2 text-sm text-fog">Creates fresh YES/NO pool accounts through the resolver, then registers the market on-chain.</p>
-      <form onSubmit={submit} className="card mt-8 space-y-5 p-6">
+    <><PageHead tag="Owner only" title="Create market" sub="Creates fresh YES/NO pool accounts through the resolver, then registers the market on-chain." /><Frame><form onSubmit={submit} className="max-w-3xl space-y-6 p-6 sm:p-10">
         <div>
           <label className="label" htmlFor="q">Question</label>
           <input id="q" className="field" value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="Will AVAX/USD be above $10 at close?" />
@@ -124,7 +124,7 @@ export default function AdminPage() {
             </div>
           </div>
         )}
-        <button className="btn-primary w-full" disabled={!!stage}>
+        <button className="btn-primary w-full py-4 text-base" disabled={!!stage}>
           {stage ? <Spinner /> : null} {stage ?? "Create market"}
         </button>
         {error && <Banner tone="error">{error}</Banner>}
@@ -133,7 +133,6 @@ export default function AdminPage() {
             Market #{done.id} created. <TxLink hash={done.hash} />
           </Banner>
         )}
-      </form>
-    </div>
+      </form></Frame></>
   );
 }

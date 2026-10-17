@@ -164,3 +164,10 @@ TEST_PRIVATE_KEY=0x... npm run test:decrypt -w @pythia/eerc-core   # live Fuji d
 - Demo state on Fuji: market 2 (manual, settled), 3 (manual, open, bets + odds), 5 (AVAX/USD price feed, closes 2026-10-15 14:16 UTC), plus settled markets 1 (cancelled/refunded) and 4 (price feed).
 - Resolver env: POOL_GAS_FUND=0.02 is plenty (Fuji gas is ~free); a resolver wallet needs a little AVAX for pool funding.
 - Not built: threshold keys, decryption proofs, on-chain bet cutoff, mainnet (see MAINNET_READINESS.md).
+
+## Design system (Phase 6: redesign)
+
+- Inspired by the Enerblock Awwwards site: flat coral (#FF5B45) + ink (#0A0A0B) + bone (#F3EEE6), visible hairline grid, heavy tight grotesk (Inter Tight 800), mono caps labels (JetBrains Mono), boxed square buttons. Brand idea: **redaction** (black bars where amounts are hidden).
+- Logo: isometric "P" of slabs with a small redaction block in the bowl (`components/Logo.tsx`, `app/icon.svg`).
+- Landing header is coral; app pages are ink. Tokens live in `frontend/tailwind.config.ts` and `globals.css`. Landing shows two REAL transactions read live (a plain 1 AVAX transfer vs a private bet) and live stats from the chain.
+- A market whose close time has passed is shown as Closed even if the contract still says Open (`effectiveStatus`).

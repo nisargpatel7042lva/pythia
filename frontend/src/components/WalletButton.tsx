@@ -24,7 +24,7 @@ function useDismiss(open: boolean, close: () => void) {
   return ref;
 }
 
-export function WalletButton() {
+export function WalletButton({ onCoral = false }: { onCoral?: boolean }) {
   const w = useWallet();
   const [picker, setPicker] = useState(false);
   const [menu, setMenu] = useState(false);
@@ -41,11 +41,11 @@ export function WalletButton() {
   if (!w.address) {
     return (
       <div className="relative" ref={pickerRef}>
-        <button className="btn-primary" disabled={w.connecting} onClick={onConnectClick} aria-haspopup="dialog" aria-expanded={picker}>
+        <button className={onCoral ? "btn-dark" : "btn-primary"} disabled={w.connecting} onClick={onConnectClick} aria-haspopup="dialog" aria-expanded={picker}>
           {w.connecting ? "Check your wallet…" : "Connect wallet"}
         </button>
         {picker && (
-          <div role="dialog" aria-label="Choose a wallet" className="card absolute right-0 z-40 mt-2 w-64 p-2 shadow-glow">
+          <div role="dialog" aria-label="Choose a wallet" className="card absolute right-0 z-40 mt-2 w-64 p-2 text-bone">
             {w.wallets.length > 0 ? (
               <>
                 <p className="px-2 pb-1.5 pt-1 text-xs uppercase tracking-wider text-fog">Choose a wallet</p>
@@ -84,16 +84,16 @@ export function WalletButton() {
   return (
     <div className="relative flex items-center gap-2" ref={menuRef}>
       {!w.onFuji && (
-        <button className="btn border border-gold/60 text-gold hover:bg-gold/10" onClick={() => w.ensureNetwork().catch(() => {})}>
+        <button className={`btn border ${onCoral ? "border-ink text-ink hover:bg-ink hover:text-coral" : "border-coral text-coral hover:bg-coral hover:text-ink"}`} onClick={() => w.ensureNetwork().catch(() => {})}>
           Switch to Fuji
         </button>
       )}
-      <button className="btn-ghost num gap-2" onClick={() => setMenu((m) => !m)} aria-haspopup="menu" aria-expanded={menu}>
-        <span className={`h-2 w-2 rounded-full ${w.onFuji ? "bg-yes" : "bg-gold"}`} />
+      <button className={`${onCoral ? "btn-outline-ink" : "btn-ghost"} num gap-2`} onClick={() => setMenu((m) => !m)} aria-haspopup="menu" aria-expanded={menu}>
+        <span className={`h-2 w-2 rounded-full ${w.onFuji ? (onCoral ? "bg-ink" : "bg-lime") : "bg-coral"}`} />
         {shortAddr(w.address)}
       </button>
       {menu && (
-        <div role="menu" className="card absolute right-0 top-full z-40 mt-2 w-56 p-2 shadow-glow">
+        <div role="menu" className="card absolute right-0 top-full z-40 mt-2 w-56 p-2 text-bone">
           <p className="num break-all px-2 pb-2 pt-1 text-xs text-fog">{w.address}</p>
           <button
             role="menuitem"
@@ -135,7 +135,7 @@ export function WalletError() {
   const w = useWallet();
   if (!w.error) return null;
   return (
-    <div role="alert" className="border-b border-no/40 bg-no/10 px-4 py-2.5 text-center text-sm text-pearl">
+    <div role="alert" className="border-b border-ink bg-ink px-4 py-2.5 text-center text-sm text-bone">
       {w.error}{" "}
       <button className="ml-2 underline" onClick={w.dismissError}>
         Dismiss

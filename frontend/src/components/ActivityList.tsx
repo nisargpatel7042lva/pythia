@@ -40,22 +40,21 @@ export function ActivityList({ marketId, refreshKey }: { marketId: number; refre
   if (bets.length === 0) return <p className="text-sm text-fog">No bets yet. Be the first.</p>;
 
   return (
-    <ul className="divide-y divide-line">
+    <ul className="border-t border-line">
       {[...bets].reverse().map((b) => (
-        <li key={b.txHash} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 py-3 text-sm">
-          <div className="flex items-center gap-3">
-            <span className={`num w-10 text-xs font-semibold ${b.side === "YES" ? "text-yes" : "text-no"}`}>{b.side}</span>
-            <a href={addressUrl(b.bettor)} target="_blank" rel="noreferrer" className="num text-pearl hover:text-violet-soft">
-              {shortAddr(b.bettor)}
-            </a>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="num rounded-md bg-raised px-2 py-0.5 text-xs tracking-widest text-gold" title="Bet sizes are encrypted on-chain">
-              HIDDEN
-            </span>
-            <span className="hidden text-xs text-fog sm:inline">{fmtDateTime(b.blockTime)}</span>
+        <li key={b.txHash} className="grid grid-cols-[56px_1fr_auto] items-center gap-x-4 gap-y-1 border-b border-line py-3.5 text-sm sm:grid-cols-[56px_1fr_150px_auto]">
+          <span className={`tag font-semibold ${b.side === "YES" ? "text-lime" : "text-coral"}`}>{b.side}</span>
+          <a href={addressUrl(b.bettor)} target="_blank" rel="noreferrer" className="num truncate hover:text-coral">
+            {shortAddr(b.bettor)}
+          </a>
+          <span className="flex items-center gap-2" title="Bet sizes are encrypted on-chain">
+            <span className="redact !h-3.5 !min-w-[3.5rem]" />
+            <span className="tag text-fog">Hidden</span>
+          </span>
+          <span className="col-span-3 flex items-center justify-between gap-4 sm:col-span-1 sm:justify-end">
+            <span className="tag hidden text-fog lg:inline">{fmtDateTime(b.blockTime)}</span>
             <TxLink hash={b.txHash} />
-          </div>
+          </span>
         </li>
       ))}
     </ul>

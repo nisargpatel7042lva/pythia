@@ -26,6 +26,7 @@ export const config = {
   },
   defaultPriceFeed: addr("NEXT_PUBLIC_DEFAULT_PRICE_FEED", process.env.NEXT_PUBLIC_DEFAULT_PRICE_FEED),
   exampleBetTx: need("NEXT_PUBLIC_EXAMPLE_BET_TX", process.env.NEXT_PUBLIC_EXAMPLE_BET_TX),
+  examplePlainTx: need("NEXT_PUBLIC_EXAMPLE_PLAIN_TX", process.env.NEXT_PUBLIC_EXAMPLE_PLAIN_TX),
   usdcFaucetUrl: need("NEXT_PUBLIC_USDC_FAUCET_URL", process.env.NEXT_PUBLIC_USDC_FAUCET_URL),
   avaxFaucetUrl: need("NEXT_PUBLIC_AVAX_FAUCET_URL", process.env.NEXT_PUBLIC_AVAX_FAUCET_URL),
 };

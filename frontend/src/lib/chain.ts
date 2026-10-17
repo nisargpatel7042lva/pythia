@@ -46,6 +46,11 @@ export interface Market {
   settlementTxCount: number;
 }
 
+/** A market the contract still calls Open but whose close time has passed is effectively closed. */
+export function effectiveStatus(m: Market, nowSeconds: number): StatusName {
+  return m.status === "Open" && nowSeconds >= m.closeTime ? "Closed" : m.status;
+}
+
 function toMarket(m: ethers.Result): Market {
   return {
     id: Number(m.id),

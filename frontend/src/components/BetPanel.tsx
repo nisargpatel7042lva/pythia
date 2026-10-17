@@ -77,9 +77,10 @@ export function BetPanel({ market, onPlaced }: { market: Market; onPlaced?: () =
 
   if (closed) {
     return (
-      <div className="card p-6">
-        <h3 className="heading mb-2 text-2xl">Betting closed</h3>
-        <p className="text-sm text-fog">
+      <div className="p-6 sm:p-8">
+        <p className="tag mb-4 text-coral">Position</p>
+        <h3 className="display text-4xl">Betting closed</h3>
+        <p className="mt-4 text-sm text-fog">
           {market.status === "Open" ? "This market has passed its close time. New bets are no longer accepted." : `This market is ${market.status.toLowerCase()}. New bets are no longer accepted.`}
         </p>
       </div>
@@ -87,10 +88,10 @@ export function BetPanel({ market, onPlaced }: { market: Market; onPlaced?: () =
   }
 
   return (
-    <div className="card p-6">
-      <h3 className="heading mb-4 text-2xl">Place a private bet</h3>
+    <div className="p-6 sm:p-8">
+      <p className="tag mb-4 text-coral">Place a private bet</p>
 
-      <div className="mb-4 grid grid-cols-2 gap-2" role="radiogroup" aria-label="Side">
+      <div className="grid grid-cols-2 border border-line" role="radiogroup" aria-label="Side">
         {(["YES", "NO"] as const).map((s) => (
           <button
             key={s}
@@ -98,73 +99,70 @@ export function BetPanel({ market, onPlaced }: { market: Market; onPlaced?: () =
             aria-checked={side === s}
             disabled={busy}
             onClick={() => setSide(s)}
-            className={`btn border ${side === s ? (s === "YES" ? "border-yes bg-yes/15 text-yes" : "border-no bg-no/15 text-no") : "border-line text-fog hover:border-fog"}`}
+            className={`display py-5 text-4xl transition-colors first:border-r first:border-line ${
+              side === s ? (s === "YES" ? "bg-lime text-ink" : "bg-coral text-ink") : "text-fog hover:bg-raised hover:text-bone"
+            }`}
           >
             {s}
           </button>
         ))}
       </div>
 
-      <label className="label" htmlFor="amount">
+      <label className="label mt-6" htmlFor="amount">
         Amount (USDC)
       </label>
-      <input
-        id="amount"
-        className="field num"
-        inputMode="decimal"
-        placeholder="0.00"
-        value={amountText}
-        disabled={busy}
-        onChange={(e) => setAmountText(e.target.value)}
-      />
-      {amountInvalid && <p className="mt-1.5 text-xs text-no">Enter a number with at most {eercDecimals} decimal places.</p>}
-      {tooSmall && <p className="mt-1.5 text-xs text-no">Amount must be greater than zero.</p>}
-      <p className="mt-2 text-xs text-fog">The amount is encrypted before it leaves your browser. Everyone can see that you bet and on which side, never how much.</p>
+      <input id="amount" className="field num text-2xl" inputMode="decimal" placeholder="0.00" value={amountText} disabled={busy} onChange={(e) => setAmountText(e.target.value)} />
+      {amountInvalid && <p className="mt-2 text-xs text-coral">Enter a number with at most {eercDecimals} decimal places.</p>}
+      {tooSmall && <p className="mt-2 text-xs text-coral">Amount must be greater than zero.</p>}
+      <p className="mt-3 text-xs leading-relaxed text-fog">Encrypted before it leaves your browser. Everyone can see that you bet and on which side, never how much.</p>
 
-      <div className="mt-5">
+      <div className="mt-6">
         {!w.address ? (
-          <button className="btn-primary w-full" onClick={() => w.connect()} disabled={w.connecting}>
+          <button className="btn-primary w-full py-4 text-base" onClick={() => w.connect()} disabled={w.connecting}>
             Connect wallet to bet
           </button>
         ) : !w.onFuji ? (
-          <button className="btn w-full border border-gold/60 text-gold hover:bg-gold/10" onClick={() => w.ensureNetwork().catch((e) => setError(friendlyError(e)))}>
+          <button className="btn w-full border border-coral py-4 text-base text-coral hover:bg-coral hover:text-ink" onClick={() => w.ensureNetwork().catch((e) => setError(friendlyError(e)))}>
             Switch to Avalanche Fuji
           </button>
         ) : (
-          <button className="btn-primary w-full" disabled={busy || amount === null || amount <= 0n} onClick={submit}>
+          <button className="btn-primary w-full py-4 text-base" disabled={busy || amount === null || amount <= 0n} onClick={submit}>
             {busy ? (
               <>
                 <Spinner className="h-4 w-4" /> Working…
               </>
             ) : (
-              `Bet ${amountText || "…"} on ${side}`
+              <>Bet {amountText || "…"} on {side} →</>
             )}
           </button>
         )}
       </div>
 
       {stage && (
-        <ol className="mt-5 space-y-2 text-sm" aria-live="polite">
-          {ORDER.filter((s) => s !== "done" && (visited.includes(s) || !["register", "shield"].includes(s)))
-            .map((s) => {
-              const state = ORDER.indexOf(s) < ORDER.indexOf(stage) ? "done" : s === stage ? "active" : "todo";
-              return (
-                <li key={s} className={`flex items-center gap-2 ${state === "todo" ? "text-fog/50" : state === "active" ? "text-pearl" : "text-fog"}`}>
-                  {state === "done" ? <span className="text-yes">✓</span> : state === "active" ? <Spinner /> : <span className="h-4 w-4" />}
-                  <span>{STAGE_LABELS[s]}</span>
-                  {state === "active" && s === "proof" && <span className="num text-xs text-fog">{elapsed}s (runs in a background worker)</span>}
-                </li>
-              );
-            })}
+        <ol className="mt-6 border-t border-line pt-4" aria-live="polite">
+          {ORDER.filter((s) => s !== "done" && (visited.includes(s) || !["register", "shield"].includes(s))).map((s) => {
+            const state = ORDER.indexOf(s) < ORDER.indexOf(stage) ? "done" : s === stage ? "active" : "todo";
+            return (
+              <li key={s} className={`tag flex items-center gap-3 border-b border-line py-2.5 ${state === "todo" ? "text-fog/40" : state === "active" ? "text-bone" : "text-fog"}`}>
+                <span className="w-4">{state === "done" ? <span className="text-lime">✓</span> : state === "active" ? <Spinner /> : null}</span>
+                <span>{STAGE_LABELS[s]}</span>
+                {state === "active" && s === "proof" && <span className="num ml-auto text-fog">{elapsed}s · background worker</span>}
+              </li>
+            );
+          })}
         </ol>
       )}
-      {busy && stage === "proof" && <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-raised"><div className="h-full w-1/3 animate-sheen rounded-full bg-gradient-to-r from-transparent via-violet to-transparent bg-[length:200%_100%]" /></div>}
+      {busy && stage === "proof" && (
+        <div className="mt-3 h-1 overflow-hidden bg-raised">
+          <div className="h-full w-1/3 animate-sheen bg-gradient-to-r from-transparent via-coral to-transparent bg-[length:200%_100%]" />
+        </div>
+      )}
 
       {error && (
-        <div className="mt-4 space-y-2">
+        <div className="mt-5 space-y-2">
           <Banner tone={error.code === "REJECTED" ? "warn" : "error"}>{error.message}</Banner>
           {error.code === "NO_USDC" && (
-            <a className="text-sm text-violet-soft underline" href={config.usdcFaucetUrl} target="_blank" rel="noreferrer">
+            <a className="tag text-coral underline underline-offset-4" href={config.usdcFaucetUrl} target="_blank" rel="noreferrer">
               Open the USDC faucet ↗
             </a>
           )}
@@ -172,9 +170,9 @@ export function BetPanel({ market, onPlaced }: { market: Market; onPlaced?: () =
       )}
 
       {result && txHash && (
-        <div className="mt-4">
+        <div className="mt-5">
           <Banner tone="ok">
-            <p className="font-medium">Bet placed privately.</p>
+            <p className="font-semibold">Bet placed privately.</p>
             <p className="mt-1">
               Transaction: <TxLink hash={result.hash} /> (the amount is not visible there)
             </p>

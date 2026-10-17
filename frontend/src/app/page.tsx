@@ -1,135 +1,355 @@
 "use client";
 
+import { ethers } from "ethers";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Frame } from "@/components/Nav";
+import { Logomark } from "@/components/Logo";
+import { MarketRow } from "@/components/ui";
 import { addressUrl, config, txUrl } from "@/config";
-import { provider, withRetry } from "@/lib/chain";
-import { shortAddr } from "@/lib/format";
+import { effectiveStatus, provider, withRetry } from "@/lib/chain";
+import { countdown, shortAddr, yesPercent } from "@/lib/format";
+import { useMarkets, useNow } from "@/lib/hooks";
+import { CountUp, Reveal } from "@/lib/reveal";
+import { fetchActivity, type ActivityBet } from "@/lib/resolverApi";
 
 interface TxFacts {
+  hash: string;
   from: string;
   to: string;
   value: string;
   bytes: number;
-  words: number;
-  smallWords: string[];
+  preview: string;
 }
 
-function useExampleTx() {
+/** Read a real transaction from the chain (nothing here is hardcoded except the hash in config). */
+function useTx(hash: string) {
   const [facts, setFacts] = useState<TxFacts | null>(null);
   const [error, setError] = useState(false);
   useEffect(() => {
+    let alive = true;
     (async () => {
       try {
-        const tx = await withRetry(() => provider.getTransaction(config.exampleBetTx));
+        const tx = await withRetry(() => provider.getTransaction(hash));
         if (!tx) throw new Error("not found");
-        const body = tx.data.slice(10);
-        const words: bigint[] = [];
-        for (let i = 0; i < body.length; i += 64) words.push(BigInt("0x" + body.slice(i, i + 64).padEnd(64, "0")));
-        setFacts({
-          from: tx.from,
-          to: tx.to ?? "",
-          value: tx.value.toString(),
-          bytes: (tx.data.length - 2) / 2,
-          words: words.length,
-          smallWords: words.filter((w) => w < 2n ** 64n).map(String),
-        });
+        if (alive)
+          setFacts({
+            hash,
+            from: tx.from,
+            to: tx.to ?? "",
+            value: `${ethers.formatEther(tx.value)} AVAX`,
+            bytes: (tx.data.length - 2) / 2,
+            preview: tx.data.length > 2 ? tx.data.slice(0, 74) : "0x",
+          });
       } catch {
-        setError(true);
+        if (alive) setError(true);
       }
     })();
-  }, []);
+    return () => {
+      alive = false;
+    };
+  }, [hash]);
   return { facts, error };
 }
 
 const STEPS = [
-  { n: "01", title: "Bet privately", body: "Pick a side and an amount. Your browser encrypts the amount and proves, in zero knowledge, that you can cover it. Only the ciphertext goes on-chain." },
-  { n: "02", title: "Odds in batches", body: "Pool totals are published only after enough new bets have arrived, so no one can difference the numbers to isolate your stake." },
-  { n: "03", title: "Settled privately", body: "When the market resolves, winners are paid from the pools through private transfers. Even payouts stay hidden." },
+  { n: "01", title: "Bet privately", body: "Pick a side and an amount. Your browser encrypts the amount and proves, in zero knowledge, that you can cover it. Only ciphertext goes on-chain." },
+  { n: "02", title: "Odds in batches", body: "Pool totals are published only after enough new bets arrive, so nobody can subtract two numbers to expose your stake." },
+  { n: "03", title: "Paid privately", body: "When the market resolves, winners are paid from the pools through private transfers. Even the payouts stay hidden." },
 ];
 
-export default function Landing() {
-  const { facts, error } = useExampleTx();
+/** Hairline label/value rows, the way the reference lays out its spec column. */
+function Spec({ rows }: { rows: [string, string][] }) {
   return (
-    <div className="space-y-24 pb-8">
-      <section className="pt-8 text-center sm:pt-16">
-        <p className="num mb-5 text-xs uppercase tracking-[0.3em] text-gold">Private prediction markets · Avalanche</p>
-        <h1 className="heading mx-auto max-w-4xl text-5xl leading-[1.05] sm:text-7xl">
-          On Polymarket, your bet size is public. <span className="text-violet-soft">On PYTHIA, it isn&apos;t.</span>
-        </h1>
-        <p className="mx-auto mt-6 max-w-2xl text-lg text-fog">
-          Who bet and which side is public. How much is hidden, encrypted with eERC. Whales can&apos;t be tracked, and copy-trading your edge stops working.
-        </p>
-        <div className="mt-9 flex flex-wrap justify-center gap-3">
-          <Link href="/markets" className="btn-primary px-6 py-3 text-base">
-            Launch App
-          </Link>
-          <a href="#proof" className="btn-ghost px-6 py-3 text-base">
-            See the proof
-          </a>
+    <dl className="divide-y divide-ink border-t border-ink">
+      {rows.map(([k, v]) => (
+        <div key={k} className="grid grid-cols-[120px_1fr] gap-4 px-6 py-3.5 sm:px-8">
+          <dt className="tag">{k}</dt>
+          <dd className="tag font-semibold">{v}</dd>
         </div>
+      ))}
+    </dl>
+  );
+}
+
+function Marquee({ items }: { items: React.ReactNode[] }) {
+  if (items.length === 0) return <div className="h-12 bg-ink" />;
+  return (
+    <div className="overflow-hidden border-y border-ink bg-ink py-3.5 text-coral" aria-label="Live activity">
+      <div className="flex w-max animate-marquee gap-12 whitespace-nowrap hover:[animation-play-state:paused]">
+        {[...items, ...items].map((it, i) => (
+          <span key={i} className="tag flex items-center gap-12">
+            {it}
+            <span className="text-bone/30">/</span>
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default function Landing() {
+  const now = useNow(1000);
+  const { data: rawMarkets } = useMarkets();
+  const markets = useMemo(() => rawMarkets?.map((m) => ({ ...m, status: effectiveStatus(m, now) })), [rawMarkets, now]);
+  const plain = useTx(config.examplePlainTx);
+  const bet = useTx(config.exampleBetTx);
+  const [activity, setActivity] = useState<ActivityBet[]>([]);
+
+  const live = useMemo(() => (markets ?? []).filter((m) => m.status === "Open"), [markets]);
+  const newest = markets?.[0];
+
+  useEffect(() => {
+    const target = live[0] ?? newest;
+    if (!target) return;
+    fetchActivity(target.id)
+      .then((r) => setActivity(r.bets.slice(-6)))
+      .catch(() => setActivity([]));
+  }, [live, newest]);
+
+  const stats = useMemo(() => {
+    const ms = markets ?? [];
+    return {
+      markets: ms.length,
+      open: ms.filter((m) => m.status === "Open").length,
+      bets: ms.reduce((s, m) => s + m.publishedBetCount, 0),
+      payouts: ms.reduce((s, m) => s + m.settlementTxCount, 0),
+    };
+  }, [markets]);
+
+  const marqueeItems = useMemo(() => {
+    const out: React.ReactNode[] = [];
+    for (const m of (markets ?? []).slice(0, 4)) {
+      const p = yesPercent(m.publishedYes, m.publishedNo);
+      out.push(
+        <span key={`m${m.id}`}>
+          Market #{m.id} · {m.status} · {m.publishedBetCount} bets{p !== null ? ` · YES ${p.toFixed(0)}% / NO ${(100 - p).toFixed(0)}%` : ""}
+        </span>,
+      );
+    }
+    for (const b of activity) {
+      out.push(
+        <span key={b.txHash} className="flex items-center gap-3">
+          {shortAddr(b.bettor)} → {b.side} <span className="redact !bg-coral" style={{ minWidth: "5.5em", height: "0.85em" }} /> hidden
+        </span>,
+      );
+    }
+    return out;
+  }, [markets, activity]);
+
+  return (
+    <div>
+      {/* ── HERO: coral, ruled, like the reference ───────────────────────── */}
+      <section className="bg-coral text-ink">
+        <Frame tone="coral">
+          <div className="grid lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
+            <div className="relative flex min-h-[560px] flex-col justify-between border-b border-ink p-6 sm:p-10 lg:min-h-[680px] lg:border-b-0 lg:border-r">
+              <div>
+                <p className="tag mb-8 flex items-center gap-3 animate-rise">
+                  <span className="h-2 w-2 bg-ink" /> Private prediction markets
+                </p>
+                <h1 className="display animate-rise text-[clamp(44px,6.3vw,104px)]" style={{ animationDelay: "80ms" }}>
+                  On Polymarket, your bet size is{" "}
+                  <span className="text-transparent [-webkit-text-stroke:2px_#0A0A0B]">public.</span>{" "}
+                  <span className="redact-title">On PYTHIA, it isn&apos;t.</span>
+                </h1>
+              </div>
+              <div className="mt-14 animate-rise" style={{ animationDelay: "220ms" }}>
+                <p className="max-w-lg text-[22px] font-medium leading-snug tracking-[-0.02em] sm:text-[26px]">
+                  Who bet and which side is public. How much is hidden, encrypted on-chain with eERC.
+                </p>
+                <div className="mt-8 flex flex-wrap gap-3">
+                  <Link href="/markets" className="btn-dark px-6 py-3.5 text-base">
+                    Launch App <span aria-hidden>→</span>
+                  </Link>
+                  <a href="#proof" className="btn-outline-ink px-6 py-3.5 text-base">
+                    See the proof
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col">
+              <div className="grid grid-cols-2 border-b border-ink">
+                <p className="tag border-r border-ink px-6 py-3.5 sm:px-8">System</p>
+                <p className="tag px-6 py-3.5 sm:px-8">Est. 2026</p>
+              </div>
+              <div className="relative flex flex-1 items-center justify-center overflow-hidden px-6 py-12 sm:px-8">
+                <div className="draw-x absolute inset-x-0 top-1/3 h-px bg-ink/70" />
+                <div className="draw-y absolute inset-y-0 left-1/3 w-px bg-ink/70" />
+                <div className="draw-y absolute inset-y-0 right-1/4 w-px bg-ink/70" style={{ animationDelay: "150ms" }} />
+                <div className="animate-rise" style={{ animationDelay: "300ms" }}>
+                  <Logomark size={300} className="text-ink drop-shadow-none" />
+                </div>
+              </div>
+              <Spec
+                rows={[
+                  ["Network", "Avalanche Fuji"],
+                  ["Privacy", "eERC · amounts encrypted"],
+                  ["Settlement", "Parimutuel · zero fee"],
+                  ["Odds", "Published in batches, K ≥ 3"],
+                ]}
+              />
+            </div>
+          </div>
+        </Frame>
       </section>
 
-      <section>
-        <h2 className="heading mb-8 text-center text-4xl">How it works</h2>
-        <div className="grid gap-4 md:grid-cols-3">
-          {STEPS.map((s) => (
-            <div key={s.n} className="card p-6">
-              <span className="num text-sm text-gold">{s.n}</span>
-              <h3 className="heading mb-2 mt-2 text-2xl">{s.title}</h3>
-              <p className="text-sm leading-relaxed text-fog">{s.body}</p>
+      <Marquee items={marqueeItems} />
+
+      {/* ── LIVE STATS (real, from the chain) ────────────────────────────── */}
+      <Frame>
+        <div className="grid grid-cols-2 border-b border-line md:grid-cols-4">
+          {[
+            ["Markets created", stats.markets],
+            ["Open right now", stats.open],
+            ["Bets published", stats.bets],
+            ["Private payouts sent", stats.payouts],
+          ].map(([label, n], i) => (
+            <div key={label as string} className={`border-line p-6 sm:p-8 ${i % 2 === 0 ? "border-r" : ""} ${i < 2 ? "border-b md:border-b-0" : ""} ${i === 1 ? "md:border-r" : ""}`}>
+              <p className="tag text-fog">{label as string}</p>
+              <p className="display mt-3 text-6xl text-coral sm:text-7xl">{markets ? <CountUp to={n as number} /> : "·"}</p>
             </div>
           ))}
         </div>
-      </section>
 
-      <section id="proof" className="scroll-mt-24">
-        <h2 className="heading mb-2 text-center text-4xl">A real bet, on-chain</h2>
-        <p className="mx-auto mb-8 max-w-2xl text-center text-sm text-fog">
-          This is an actual PYTHIA bet on Fuji. Everything below is read live from the chain right now.
-        </p>
-        <div className="card mx-auto max-w-3xl p-6">
-          {error && <p className="text-sm text-no">Could not load the example transaction right now. Open it on Snowtrace instead.</p>}
-          {!facts && !error && <p className="text-sm text-fog">Reading the transaction from the chain…</p>}
-          {facts && (
-            <dl className="num grid grid-cols-[auto_1fr] gap-x-6 gap-y-2.5 text-sm">
-              <dt className="text-fog">Bettor</dt>
-              <dd className="break-all">{facts.from}</dd>
-              <dt className="text-fog">Called</dt>
-              <dd className="break-all">{shortAddr(facts.to)} · EncryptedERC.transfer</dd>
-              <dt className="text-fog">Native value</dt>
-              <dd>{facts.value} wei</dd>
-              <dt className="text-fog">Calldata</dt>
-              <dd>
-                {facts.bytes} bytes, {facts.words} words of proof and ciphertext
-              </dd>
-              <dt className="text-fog">Small numbers visible</dt>
-              <dd>
-                {facts.smallWords.join(", ") || "none"} <span className="text-fog">(the token id)</span>
-              </dd>
-              <dt className="text-fog">Bet amount</dt>
-              <dd className="text-gold">not present anywhere</dd>
+        {/* ── ANATOMY: same chain, two transactions ─────────────────────── */}
+        <section id="proof" className="scroll-mt-20 border-b border-line">
+          <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
+            <Reveal className="border-b border-line p-6 sm:p-10 lg:border-b-0 lg:border-r">
+              <p className="tag mb-6 text-coral">Anatomy of a bet</p>
+              <h2 className="display text-[clamp(36px,4.4vw,68px)]">Same chain. Different transparency.</h2>
+              <p className="mt-6 max-w-md text-fog">
+                Both transactions below are real and read live from Avalanche Fuji right now. One reveals its amount in plain sight. The other carries only proof and ciphertext.
+              </p>
+            </Reveal>
+            <div className="grid md:grid-cols-2">
+              <TxPanel title="A normal transfer" light facts={plain.facts} error={plain.error} amountLabel="Amount" amount={plain.facts?.value} visible />
+              <TxPanel title="A PYTHIA bet" facts={bet.facts} error={bet.error} amountLabel="Amount" visible={false} />
+            </div>
+          </div>
+        </section>
+
+        {/* ── HOW IT WORKS ──────────────────────────────────────────────── */}
+        <section className="grid border-b border-line md:grid-cols-3">
+          {STEPS.map((s, i) => (
+            <Reveal key={s.n} delay={i * 90} className={`group p-6 transition-colors hover:bg-coral hover:text-ink sm:p-10 ${i < 2 ? "md:border-r md:border-line" : ""} ${i < 2 ? "border-b border-line md:border-b-0" : ""}`}>
+              <p className="display text-[120px] text-transparent [-webkit-text-stroke:1.5px_#F3EEE6] group-hover:[-webkit-text-stroke:1.5px_#0A0A0B]">{s.n}</p>
+              <h3 className="display mt-8 text-4xl">{s.title}</h3>
+              <p className="mt-4 text-fog group-hover:text-ink/80">{s.body}</p>
+            </Reveal>
+          ))}
+        </section>
+
+        {/* ── LIVE MARKETS ──────────────────────────────────────────────── */}
+        <section>
+          <div className="flex items-end justify-between border-b border-line p-6 sm:p-10">
+            <div>
+              <p className="tag mb-4 text-coral">Live on Fuji</p>
+              <h2 className="display text-[clamp(36px,4.4vw,68px)]">Markets</h2>
+            </div>
+            <Link href="/markets" className="btn-ghost">
+              All markets →
+            </Link>
+          </div>
+          {!markets && <p className="p-8 text-sm text-fog">Loading markets from the chain…</p>}
+          {(live.length ? live : markets ?? []).slice(0, 3).map((m, i) => (
+            <MarketRow key={m.id} m={m} index={i + 1} yesPct={yesPercent(m.publishedYes, m.publishedNo)} countdownText={countdown(m.closeTime, now)} />
+          ))}
+        </section>
+      </Frame>
+
+      {/* ── TRUST: coral band, honest ─────────────────────────────────────── */}
+      <section id="trust" className="mt-24 scroll-mt-16 bg-coral text-ink">
+        <Frame tone="coral">
+          <div className="grid lg:grid-cols-2">
+            <div className="border-b border-ink p-6 sm:p-10 lg:border-b-0 lg:border-r">
+              <p className="tag mb-6">Honest about trust</p>
+              <h2 className="display text-[clamp(36px,4.6vw,72px)]">Private from everyone watching. Not from the resolver.</h2>
+              <p className="mt-6 max-w-lg text-lg font-medium leading-snug">
+                In v1 the resolver holds the pool accounts and is trusted for custody and settlement. It can see every stake, and so can the eERC auditor key. We say so up front.
+              </p>
+              <Link href="/markets" className="btn-dark mt-10 px-6 py-3.5 text-base">
+                Launch App →
+              </Link>
+            </div>
+            <dl className="divide-y divide-ink">
+              {[
+                ["Hidden", "Bet amounts and payout amounts on-chain"],
+                ["Public", "Who bet, which side, when, and the batched odds"],
+                ["Roadmap", "Threshold-shared keys: no single custodian"],
+                ["Roadmap", "Zero-knowledge proofs that published totals and payouts are correct"],
+              ].map(([k, v], i) => (
+                <div key={i} className="grid grid-cols-[110px_1fr] gap-4 px-6 py-6 sm:px-10">
+                  <dt className="tag">{k}</dt>
+                  <dd className="text-lg font-semibold leading-snug tracking-[-0.01em]">{v}</dd>
+                </div>
+              ))}
             </dl>
-          )}
-          <div className="mt-5 flex flex-wrap gap-4 text-sm">
-            <a className="text-violet-soft underline" href={txUrl(config.exampleBetTx)} target="_blank" rel="noreferrer">
+          </div>
+        </Frame>
+      </section>
+    </div>
+  );
+}
+
+/** One transaction, shown as hairline rows. `visible` decides whether the amount is shown or redacted. */
+function TxPanel({
+  title,
+  facts,
+  error,
+  light = false,
+  visible,
+  amount,
+  amountLabel,
+}: {
+  title: string;
+  facts: TxFacts | null;
+  error: boolean;
+  light?: boolean;
+  visible: boolean;
+  amount?: string;
+  amountLabel: string;
+}) {
+  const bg = light ? "bg-bone text-ink border-ink/20" : "bg-panel text-bone border-line";
+  const muted = light ? "text-ink/55" : "text-fog";
+  return (
+    <div className={`flex flex-col border-t md:border-t-0 md:first:border-r ${bg}`}>
+      <p className={`tag border-b px-6 py-4 ${light ? "border-ink/20" : "border-line"}`}>{title}</p>
+      <div className="flex-1 space-y-4 p-6 text-sm">
+        {error && <p className="text-coral">Could not read this transaction right now.</p>}
+        {!facts && !error && <p className={muted}>Reading from the chain…</p>}
+        {facts && (
+          <>
+            <Row k="From" v={<a className="num break-all underline-offset-4 hover:underline" href={addressUrl(facts.from)} target="_blank" rel="noreferrer">{shortAddr(facts.from)}</a>} muted={muted} />
+            <Row k="Value" v={<span className="num">{facts.value}</span>} muted={muted} />
+            <Row k="Calldata" v={<span className="num break-all text-xs">{facts.bytes === 0 ? "0x (empty)" : `${facts.preview}… ${facts.bytes} bytes`}</span>} muted={muted} />
+            <div className={`border-t pt-4 ${light ? "border-ink/20" : "border-line"}`}>
+              <p className={`tag mb-2 ${muted}`}>{amountLabel}</p>
+              {visible ? (
+                <p className="display text-5xl">{amount}</p>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <span className="redact !h-12 !min-w-[8rem] !bg-coral" />
+                  <span className="tag text-coral">not on-chain</span>
+                </div>
+              )}
+            </div>
+            <a className={`tag inline-block underline underline-offset-4 ${light ? "" : "text-coral"}`} href={txUrl(facts.hash)} target="_blank" rel="noreferrer">
               View on Snowtrace ↗
             </a>
-            {facts && (
-              <a className="text-violet-soft underline" href={addressUrl(facts.from)} target="_blank" rel="noreferrer">
-                Bettor address ↗
-              </a>
-            )}
-          </div>
-        </div>
-      </section>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
 
-      <section className="card mx-auto max-w-3xl p-8 text-center">
-        <h2 className="heading mb-3 text-3xl">Honest about trust</h2>
-        <p className="text-sm leading-relaxed text-fog">
-          In v1 the resolver holds the pool accounts and is trusted for custody and settlement. Privacy holds against everyone watching the chain, not against the resolver. Threshold keys and decryption proofs are on the roadmap.
-        </p>
-      </section>
+function Row({ k, v, muted }: { k: string; v: React.ReactNode; muted: string }) {
+  return (
+    <div className="grid grid-cols-[84px_1fr] gap-3">
+      <span className={`tag ${muted}`}>{k}</span>
+      <span>{v}</span>
     </div>
   );
 }

@@ -4,57 +4,162 @@
 
 :root {
   color-scheme: dark;
+  --coral: #ff5b45;
+  --ink: #0a0a0b;
+  --bone: #f3eee6;
 }
 
 html,
 body {
-  background: #070709;
-  color: #ececf3;
+  background: var(--ink);
+  color: var(--bone);
 }
 
 body {
   font-family: var(--font-sans), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
   min-height: 100vh;
-  background-image:
-    radial-gradient(1100px 520px at 12% -8%, rgba(139, 92, 246, 0.16), transparent 60%),
-    radial-gradient(900px 480px at 100% 0%, rgba(212, 175, 55, 0.07), transparent 55%);
-  background-repeat: no-repeat;
-  background-attachment: fixed;
 }
 
 ::selection {
-  background: rgba(139, 92, 246, 0.4);
+  background: var(--coral);
+  color: var(--ink);
+}
+
+/* thin, quiet scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #2b2b30 transparent;
 }
 
 @layer components {
-  .card {
-    @apply rounded-2xl border border-line bg-panel/80 backdrop-blur-sm;
-  }
-  .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium transition
-      disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet;
-  }
-  .btn-primary {
-    @apply btn bg-violet text-white shadow-glow hover:bg-violet-soft;
-  }
-  .btn-ghost {
-    @apply btn border border-line text-pearl hover:border-violet/60 hover:bg-raised;
-  }
-  .chip {
-    @apply inline-flex items-center rounded-full border border-line px-2.5 py-0.5 text-xs text-fog;
-  }
-  .field {
-    @apply w-full rounded-xl border border-line bg-raised px-3.5 py-2.5 text-sm text-pearl placeholder:text-fog/60
-      focus:border-violet focus:outline-none;
-  }
-  .label {
-    @apply mb-1.5 block text-xs uppercase tracking-wider text-fog;
+  /* ── type ─────────────────────────────────────────────── */
+  .display {
+    @apply font-display font-extrabold tracking-[-0.045em] leading-[0.92];
   }
   .heading {
-    @apply font-serif font-semibold tracking-tight;
+    @apply font-display font-bold tracking-[-0.035em] leading-[1];
+  }
+  .tag {
+    @apply font-mono text-[11px] font-medium uppercase tracking-[0.12em];
   }
   .num {
     @apply font-mono tabular-nums;
+  }
+
+  /* ── surfaces ─────────────────────────────────────────── */
+  .card {
+    @apply border border-line bg-panel;
+  }
+  .rule {
+    @apply border-line;
+  }
+
+  /* ── buttons: square, boxed, mono-ish like the reference ─ */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold transition-colors duration-150
+      disabled:cursor-not-allowed disabled:opacity-50
+      focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-coral;
+  }
+  .btn-primary {
+    @apply btn bg-coral text-ink hover:bg-bone;
+  }
+  .btn-dark {
+    @apply btn bg-ink text-bone hover:bg-coral hover:text-ink;
+  }
+  .btn-ghost {
+    @apply btn border border-line text-bone hover:border-coral hover:text-coral;
+  }
+  .btn-outline-ink {
+    @apply btn border border-ink text-ink hover:bg-ink hover:text-coral;
+  }
+  .chip {
+    @apply inline-flex items-center border border-line px-2 py-0.5 font-mono text-[11px] uppercase tracking-wider text-fog;
+  }
+  .field {
+    @apply w-full border border-line bg-ink px-3.5 py-3 text-sm text-bone placeholder:text-fog/60
+      focus:border-coral focus:outline-none;
+  }
+  .label {
+    @apply mb-1.5 block font-mono text-[11px] uppercase tracking-[0.12em] text-fog;
+  }
+
+  /* ── redaction bar: the brand idea ────────────────────── */
+  .redact {
+    @apply inline-block select-none bg-bone align-middle text-transparent;
+    height: 0.8em;
+    min-width: 3.2em;
+  }
+}
+
+/* the headline redaction: an ink highlight that sweeps in and wraps across lines */
+@keyframes redactBg {
+  from {
+    background-size: 0% 100%;
+  }
+  to {
+    background-size: 100% 100%;
+  }
+}
+.redact-title {
+  background: linear-gradient(var(--ink), var(--ink)) no-repeat left center / 100% 100%;
+  color: var(--coral);
+  padding: 0 0.22em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  animation: redactBg 0.8s cubic-bezier(0.7, 0, 0.2, 1) 0.5s both;
+}
+
+/* reveal-on-scroll (see useReveal) */
+.reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition:
+    opacity 0.8s cubic-bezier(0.2, 0.7, 0.2, 1),
+    transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.reveal.in {
+  opacity: 1;
+  transform: none;
+}
+
+/* the hero grid draws itself in */
+@keyframes drawX {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+@keyframes drawY {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+.draw-x {
+  transform-origin: left;
+  animation: drawX 1.1s cubic-bezier(0.7, 0, 0.2, 1) both;
+}
+.draw-y {
+  transform-origin: top;
+  animation: drawY 1.1s cubic-bezier(0.7, 0, 0.2, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
   }
 }

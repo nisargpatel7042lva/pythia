@@ -3,19 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { Logo, Logomark } from "@/components/Logo";
+import { WalletButton, WalletError } from "@/components/WalletButton";
 import { useHealth, useOwner } from "@/lib/hooks";
 import { useWallet } from "@/lib/wallet";
-import { WalletButton, WalletError } from "@/components/WalletButton";
 
-export function Logo() {
-  return (
-    <Link href="/" className="flex items-center gap-2.5" aria-label="PYTHIA home">
-      <span className="grid h-7 w-7 place-items-center rounded-full border border-gold/60 text-gold">
-        <span className="h-2 w-2 rounded-full bg-gold shadow-[0_0_12px_2px_rgba(212,175,55,.7)]" />
-      </span>
-      <span className="heading text-2xl tracking-[0.18em]">PYTHIA</span>
-    </Link>
-  );
+/** Max-width frame with hairline side rules: the page grid every screen sits in. */
+export function Frame({ children, className = "", tone = "ink" }: { children: React.ReactNode; className?: string; tone?: "ink" | "coral" }) {
+  return <div className={`mx-auto max-w-[1440px] border-x ${tone === "coral" ? "border-ink" : "border-line"} ${className}`}>{children}</div>;
 }
 
 export function Nav() {
@@ -24,6 +19,7 @@ export function Nav() {
   const owner = useOwner();
   const health = useHealth();
   const [menu, setMenu] = useState(false);
+  const onCoral = path === "/";
   const isOwner = !!w.address && !!owner.data && w.address.toLowerCase() === owner.data.toLowerCase();
   const links = [
     { href: "/markets", label: "Markets" },
@@ -31,52 +27,99 @@ export function Nav() {
     ...(isOwner ? [{ href: "/admin", label: "Admin" }] : []),
   ];
   const online = !!health.data?.ok;
+
+  const line = onCoral ? "border-ink" : "border-line";
   return (
-    <header className="sticky top-0 z-20 border-b border-line/70 bg-ink/80 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
-        <div className="flex items-center gap-8">
-          <Logo />
-          <nav className="hidden gap-6 md:flex">
+    <header className={`sticky top-0 z-30 ${onCoral ? "bg-coral text-ink" : "bg-ink/95 text-bone backdrop-blur"}`}>
+      <Frame tone={onCoral ? "coral" : "ink"}>
+        <div className={`flex h-16 items-stretch border-b ${line}`}>
+          <div className={`flex items-center border-r px-4 sm:px-6 lg:w-[300px] ${line}`}>
+            <Logo tone={onCoral ? "ink" : "bone"} />
+          </div>
+
+          <nav className="hidden flex-1 items-stretch md:flex" aria-label="Primary">
+            {links.map((l) => {
+              const active = path.startsWith(l.href);
+              return (
+                <Link
+                  key={l.href}
+                  href={l.href}
+                  className={`tag flex items-center border-r px-6 transition-colors ${line} ${
+                    onCoral ? (active ? "bg-ink text-coral" : "hover:bg-ink hover:text-coral") : active ? "bg-coral text-ink" : "text-fog hover:bg-raised hover:text-bone"
+                  }`}
+                >
+                  {l.label}
+                </Link>
+              );
+            })}
+            <div className="flex-1" />
+            <span
+              className={`tag hidden items-center gap-2 border-l px-5 lg:flex ${line} ${online ? "" : onCoral ? "" : "text-coral"}`}
+              title={online ? "Resolver online" : "Resolver unreachable: activity feed unavailable"}
+            >
+              <span className={`h-1.5 w-1.5 rounded-full ${online ? (onCoral ? "bg-ink" : "bg-lime") : onCoral ? "bg-ink/40" : "bg-coral"}`} />
+              {online ? "Resolver live" : health.loading ? "…" : "Resolver offline"}
+            </span>
+          </nav>
+
+          <div className={`ml-auto flex items-center gap-2 px-3 md:ml-0 md:border-l md:px-4 ${line}`}>
+            <WalletButton onCoral={onCoral} />
+            <button className={`${onCoral ? "btn-outline-ink" : "btn-ghost"} px-3 md:hidden`} aria-label="Menu" aria-expanded={menu} onClick={() => setMenu((m) => !m)}>
+              <span className="block h-0.5 w-4 bg-current shadow-[0_5px_0_currentColor,0_-5px_0_currentColor]" />
+            </button>
+          </div>
+        </div>
+        <WalletError />
+        {menu && (
+          <nav className={`flex flex-col border-b md:hidden ${line}`}>
             {links.map((l) => (
-              <Link key={l.href} href={l.href} className={`text-sm transition hover:text-pearl ${path.startsWith(l.href) ? "text-pearl" : "text-fog"}`}>
+              <Link key={l.href} href={l.href} onClick={() => setMenu(false)} className={`tag border-b px-6 py-4 last:border-b-0 ${line}`}>
                 {l.label}
               </Link>
             ))}
           </nav>
-        </div>
-        <div className="flex items-center gap-3">
-          <span
-            className={`hidden items-center gap-1.5 text-xs sm:flex ${online ? "text-fog" : "text-no"}`}
-            title={online ? "Resolver online" : "Resolver unreachable: activity feed unavailable"}
-          >
-            <span className={`h-1.5 w-1.5 rounded-full ${online ? "bg-yes" : "bg-no"}`} />
-            {online ? "resolver online" : health.loading ? "…" : "resolver offline"}
-          </span>
-          <WalletButton />
-          <button className="btn-ghost px-3 md:hidden" aria-label="Menu" onClick={() => setMenu((m) => !m)}>
-            ☰
-          </button>
-        </div>
-      </div>
-      <WalletError />
-      {menu && (
-        <nav className="flex flex-col gap-1 border-t border-line px-4 py-3 md:hidden">
-          {links.map((l) => (
-            <Link key={l.href} href={l.href} onClick={() => setMenu(false)} className="rounded-lg px-3 py-2 text-sm text-pearl hover:bg-raised">
-              {l.label}
-            </Link>
-          ))}
-        </nav>
-      )}
+        )}
+      </Frame>
     </header>
   );
 }
 
 export function Footer() {
   return (
-    <footer className="mt-24 border-t border-line/70 py-10 text-center text-xs text-fog">
-      <p>PYTHIA on Avalanche Fuji testnet. Bet sizes are hidden with eERC; who bet and which side is public.</p>
-      <p className="mt-1">Trust model v1: the resolver is trusted for custody and settlement.</p>
+    <footer className="mt-24 overflow-hidden border-t border-line">
+      <Frame>
+        <div className="grid gap-px border-b border-line bg-line md:grid-cols-4">
+          {[
+            ["Product", [["Markets", "/markets"], ["Portfolio", "/portfolio"]]],
+            ["Network", [["Avalanche Fuji", "https://testnet.snowtrace.io"], ["eERC", "https://github.com/ava-labs/EncryptedERC"]]],
+            ["Trust", [["Resolver is trusted (v1)", "/#trust"], ["Roadmap: threshold keys", "/#trust"]]],
+          ].map(([title, items]) => (
+            <div key={title as string} className="bg-ink p-6">
+              <p className="tag mb-4 text-fog">{title as string}</p>
+              <ul className="space-y-2 text-sm">
+                {(items as string[][]).map(([label, href]) => (
+                  <li key={label}>
+                    <Link href={href} className="hover:text-coral" {...(href.startsWith("http") ? { target: "_blank", rel: "noreferrer" } : {})}>
+                      {label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+          <div className="flex flex-col justify-between bg-ink p-6">
+            <Logomark size={44} className="text-coral" />
+            <p className="tag mt-6 text-fog">
+              Testnet. Unaudited.
+              <br />
+              Who bet is public. How much is hidden.
+            </p>
+          </div>
+        </div>
+        <div className="select-none overflow-hidden px-2 pt-6 text-center" aria-hidden="true">
+          <span className="display block text-[26vw] leading-[0.78] text-coral/90 min-[1440px]:text-[370px]">PYTHIA</span>
+        </div>
+      </Frame>
     </footer>
   );
 }
