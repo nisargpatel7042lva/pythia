@@ -185,6 +185,10 @@ paid out in 4 private transfers
 then [marked Settled](https://testnet.snowtrace.io/tx/0xcbd1bad6776a70c57359c39078c27c5fc1a641eb0a92233274c906cbbbaa08f0).
 Market 1 shows the cancel-and-refund path ([settled](https://testnet.snowtrace.io/tx/0x5e7b1832b3ec49a0c6f2aee687e36bf855b3e48867f88987af93a01153f57872)).
 
+## About the demo data
+
+Every market, bet, odds update and payout shown in the app is a **real transaction on Avalanche Fuji testnet** (links above), not mock data. They were created by the team with the repo's own scripts and UI: two funded test wallets placed the seed bets through the same private-transfer flow a user goes through (`resolver/scripts/placeBet.ts`), and the resolver service published odds, resolved markets and paid out on its own. The money is testnet USDC with no value, the questions are demo questions, and the bettors are our test wallets, not independent users.
+
 ## Pre-existing work vs built during this Speedrun
 
 **Came from PHANTOM / the eERC backend (reused, not rewritten)**

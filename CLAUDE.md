@@ -167,7 +167,7 @@ TEST_PRIVATE_KEY=0x... npm run test:decrypt -w @pythia/eerc-core   # live Fuji d
 
 ## Design system (Phase 6: redesign)
 
-- Inspired by the Enerblock Awwwards site: flat coral (#FF5B45) + ink (#0A0A0B) + bone (#F3EEE6), visible hairline grid, heavy tight grotesk (Inter Tight 800), mono caps labels (JetBrains Mono), boxed square buttons. Brand idea: **redaction** (black bars where amounts are hidden).
+- Inspired by the Enerblock Awwwards site, in a calm palette: muted sage (#A8C8B8) + deep green-black ink (#0B1112) + bone (#EFE9DD), mint for YES and clay for NO/warnings, visible hairline grid, heavy tight grotesk (Inter Tight 800), mono caps labels (JetBrains Mono), boxed square buttons. Brand idea: **redaction** (black bars where amounts are hidden).
 - Logo: isometric "P" of slabs with a small redaction block in the bowl (`components/Logo.tsx`, `app/icon.svg`).
 - Landing header is coral; app pages are ink. Tokens live in `frontend/tailwind.config.ts` and `globals.css`. Landing shows two REAL transactions read live (a plain 1 AVAX transfer vs a private bet) and live stats from the chain.
 - A market whose close time has passed is shown as Closed even if the contract still says Open (`effectiveStatus`).

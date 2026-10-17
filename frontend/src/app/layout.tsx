@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   title: "PYTHIA: private prediction markets",
   description: "On Polymarket, your bet size is public. On PYTHIA, it isn't. Private prediction markets on Avalanche.",
 };
-export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: "#FF5B45" };
+export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: "#A8C8B8" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

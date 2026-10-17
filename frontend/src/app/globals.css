@@ -4,9 +4,9 @@
 
 :root {
   color-scheme: dark;
-  --coral: #ff5b45;
-  --ink: #0a0a0b;
-  --bone: #f3eee6;
+  --sage: #a8c8b8;
+  --ink: #0b1112;
+  --bone: #efe9dd;
 }
 
 html,
@@ -23,14 +23,14 @@ body {
 }
 
 ::selection {
-  background: var(--coral);
+  background: var(--sage);
   color: var(--ink);
 }
 
 /* thin, quiet scrollbars */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #2b2b30 transparent;
+  scrollbar-color: #243030 transparent;
 }
 
 @layer components {
@@ -60,26 +60,26 @@ body {
   .btn {
     @apply inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-semibold transition-colors duration-150
       disabled:cursor-not-allowed disabled:opacity-50
-      focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-coral;
+      focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sage;
   }
   .btn-primary {
-    @apply btn bg-coral text-ink hover:bg-bone;
+    @apply btn bg-sage text-ink hover:bg-bone;
   }
   .btn-dark {
-    @apply btn bg-ink text-bone hover:bg-coral hover:text-ink;
+    @apply btn bg-ink text-bone hover:bg-sage hover:text-ink;
   }
   .btn-ghost {
-    @apply btn border border-line text-bone hover:border-coral hover:text-coral;
+    @apply btn border border-line text-bone hover:border-sage hover:text-sage;
   }
   .btn-outline-ink {
-    @apply btn border border-ink text-ink hover:bg-ink hover:text-coral;
+    @apply btn border border-ink text-ink hover:bg-ink hover:text-sage;
   }
   .chip {
     @apply inline-flex items-center border border-line px-2 py-0.5 font-mono text-[11px] uppercase tracking-wider text-fog;
   }
   .field {
     @apply w-full border border-line bg-ink px-3.5 py-3 text-sm text-bone placeholder:text-fog/60
-      focus:border-coral focus:outline-none;
+      focus:border-sage focus:outline-none;
   }
   .label {
     @apply mb-1.5 block font-mono text-[11px] uppercase tracking-[0.12em] text-fog;
@@ -104,7 +104,7 @@ body {
 }
 .redact-title {
   background: linear-gradient(var(--ink), var(--ink)) no-repeat left center / 100% 100%;
-  color: var(--coral);
+  color: var(--sage);
   padding: 0 0.22em;
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;

@@ -71,7 +71,7 @@ export default function PortfolioPage() {
         {rows && rows.length === 0 && (
           <p className="p-8 text-sm text-fog">
             No bets found for this wallet yet.{" "}
-            <Link className="text-coral underline" href="/markets">
+            <Link className="text-sage underline" href="/markets">
               Browse markets
             </Link>
           </p>
@@ -97,7 +97,7 @@ function Stat({ label, value, unit, accent, tone, last }: { label: string; value
   return (
     <div className={`border-b border-line p-6 sm:border-b-0 sm:p-10 ${last ? "" : "sm:border-r"}`}>
       <p className="tag text-fog">{label}</p>
-      <p className={`display num mt-3 text-5xl sm:text-6xl ${accent ? "text-coral" : tone === "up" ? "text-lime" : tone === "down" ? "text-coral" : ""}`}>
+      <p className={`display num mt-3 text-5xl sm:text-6xl ${accent ? "text-sage" : tone === "up" ? "text-mint" : tone === "down" ? "text-clay" : ""}`}>
         {value}
         <span className="tag ml-2 text-fog">{unit}</span>
       </p>
@@ -108,21 +108,21 @@ function Stat({ label, value, unit, accent, tone, last }: { label: string; value
 function Table({ title, rows, q, dec, empty }: { title: string; rows: PortfolioRow[]; q: (id: number) => string; dec: number; empty?: string }) {
   return (
     <section className="border-b border-line">
-      <p className="tag border-b border-line px-6 py-4 text-coral sm:px-10">{title}</p>
+      <p className="tag border-b border-line px-6 py-4 text-sage sm:px-10">{title}</p>
       {rows.length === 0 ? (
         <p className="p-6 text-sm text-fog sm:px-10">{empty ?? "None."}</p>
       ) : (
         rows.map((r) => (
           <div key={r.txHash} className="grid gap-x-6 gap-y-2 border-b border-line px-6 py-5 last:border-b-0 sm:grid-cols-[1fr_auto_auto] sm:items-center sm:px-10">
             <div className="min-w-0">
-              <Link href={`/markets/${r.marketId}`} className="display block truncate text-xl hover:text-coral">
+              <Link href={`/markets/${r.marketId}`} className="display block truncate text-xl hover:text-sage">
                 {q(r.marketId)}
               </Link>
               <span className="tag text-fog">
                 {r.kind === "bet" ? `on ${r.side}` : `from the ${r.side} pool`} · {fmtDateTime(r.blockTime)}
               </span>
             </div>
-            <span className="num text-2xl text-coral">{r.amount === null ? "could not decrypt" : `${fmtUnits(r.amount, dec)} USDC`}</span>
+            <span className="num text-2xl text-sage">{r.amount === null ? "could not decrypt" : `${fmtUnits(r.amount, dec)} USDC`}</span>
             <TxLink hash={r.txHash} />
           </div>
         ))

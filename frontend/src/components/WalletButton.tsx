@@ -24,7 +24,7 @@ function useDismiss(open: boolean, close: () => void) {
   return ref;
 }
 
-export function WalletButton({ onCoral = false }: { onCoral?: boolean }) {
+export function WalletButton({ onSage = false }: { onSage?: boolean }) {
   const w = useWallet();
   const [picker, setPicker] = useState(false);
   const [menu, setMenu] = useState(false);
@@ -41,7 +41,7 @@ export function WalletButton({ onCoral = false }: { onCoral?: boolean }) {
   if (!w.address) {
     return (
       <div className="relative" ref={pickerRef}>
-        <button className={onCoral ? "btn-dark" : "btn-primary"} disabled={w.connecting} onClick={onConnectClick} aria-haspopup="dialog" aria-expanded={picker}>
+        <button className={onSage ? "btn-dark" : "btn-primary"} disabled={w.connecting} onClick={onConnectClick} aria-haspopup="dialog" aria-expanded={picker}>
           {w.connecting ? "Check your wallet…" : "Connect wallet"}
         </button>
         {picker && (
@@ -84,12 +84,12 @@ export function WalletButton({ onCoral = false }: { onCoral?: boolean }) {
   return (
     <div className="relative flex items-center gap-2" ref={menuRef}>
       {!w.onFuji && (
-        <button className={`btn border ${onCoral ? "border-ink text-ink hover:bg-ink hover:text-coral" : "border-coral text-coral hover:bg-coral hover:text-ink"}`} onClick={() => w.ensureNetwork().catch(() => {})}>
+        <button className={`btn border ${onSage ? "border-ink text-ink hover:bg-ink hover:text-sage" : "border-clay text-clay hover:bg-clay hover:text-ink"}`} onClick={() => w.ensureNetwork().catch(() => {})}>
           Switch to Fuji
         </button>
       )}
-      <button className={`${onCoral ? "btn-outline-ink" : "btn-ghost"} num gap-2`} onClick={() => setMenu((m) => !m)} aria-haspopup="menu" aria-expanded={menu}>
-        <span className={`h-2 w-2 rounded-full ${w.onFuji ? (onCoral ? "bg-ink" : "bg-lime") : "bg-coral"}`} />
+      <button className={`${onSage ? "btn-outline-ink" : "btn-ghost"} num gap-2`} onClick={() => setMenu((m) => !m)} aria-haspopup="menu" aria-expanded={menu}>
+        <span className={`h-2 w-2 rounded-full ${w.onFuji ? (onSage ? "bg-ink" : "bg-mint") : "bg-clay"}`} />
         {shortAddr(w.address)}
       </button>
       {menu && (

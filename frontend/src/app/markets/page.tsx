@@ -34,7 +34,7 @@ export default function MarketsPage() {
                 key={s}
                 onClick={() => setStatus(s)}
                 aria-pressed={status === s}
-                className={`tag border-r border-line px-5 py-4 transition-colors ${status === s ? "bg-coral text-ink" : "text-fog hover:bg-raised hover:text-bone"}`}
+                className={`tag border-r border-line px-5 py-4 transition-colors ${status === s ? "bg-sage text-ink" : "text-fog hover:bg-raised hover:text-bone"}`}
               >
                 {s}
               </button>

@@ -1,7 +1,7 @@
 import type { Config } from "tailwindcss";
 
 /**
- * PYTHIA design tokens. Language: flat coral and ink, a visible hairline grid, heavy tight
+ * PYTHIA design tokens. Language: flat sage and ink, a visible hairline grid, heavy tight
  * grotesk, small mono labels, and "redaction" (black bars) as the brand idea for hidden amounts.
  */
 const config: Config = {
@@ -9,21 +9,23 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: "#0A0A0B",
-        panel: "#101012",
-        raised: "#17171A",
-        line: "#2B2B30",
-        coral: { DEFAULT: "#FF5B45", deep: "#E5432D", soft: "#FF8A78" },
-        bone: "#F3EEE6",
-        fog: "#8F8C87",
-        lime: "#C5F63D",
-        // semantic
-        yes: "#C5F63D",
-        no: "#FF5B45",
-        // legacy aliases so older class names keep working
-        pearl: "#F3EEE6",
-        violet: { DEFAULT: "#FF5B45", soft: "#FF8A78", deep: "#E5432D" },
-        gold: { DEFAULT: "#FF5B45", soft: "#FF8A78" },
+        ink: "#0B1112",
+        panel: "#111A1B",
+        raised: "#172223",
+        line: "#243030",
+        // calm, desaturated accent (sage) instead of a loud brand colour
+        sage: { DEFAULT: "#A8C8B8", deep: "#7FA896", soft: "#C4DBCE" },
+        bone: "#EFE9DD",
+        fog: "#8A9692",
+        // semantic: YES = mint, NO / warnings = soft clay
+        mint: "#9AD7B4",
+        clay: "#D98E7B",
+        yes: "#9AD7B4",
+        no: "#D98E7B",
+        // legacy aliases
+        pearl: "#EFE9DD",
+        violet: { DEFAULT: "#A8C8B8", soft: "#C4DBCE", deep: "#7FA896" },
+        gold: { DEFAULT: "#A8C8B8", soft: "#C4DBCE" },
       },
       fontFamily: {
         display: ["var(--font-display)", "Helvetica Neue", "Arial", "sans-serif"],
@@ -33,7 +35,7 @@ const config: Config = {
       },
       boxShadow: {
         glow: "none",
-        hard: "6px 6px 0 0 #0A0A0B",
+        hard: "6px 6px 0 0 #0B1112",
       },
       keyframes: {
         marquee: { "0%": { transform: "translateX(0)" }, "100%": { transform: "translateX(-50%)" } },

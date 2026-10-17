@@ -68,7 +68,7 @@ export default function MarketPage({ params }: { params: { id: string } }) {
         <div className="min-w-0 border-line lg:border-r">
           {/* head */}
           <div className="border-b border-line p-6 sm:p-10">
-            <Link href="/markets" className="tag text-fog hover:text-coral">
+            <Link href="/markets" className="tag text-fog hover:text-sage">
               ← All markets
             </Link>
             <div className="mb-5 mt-6 flex flex-wrap items-center gap-3">
@@ -76,14 +76,14 @@ export default function MarketPage({ params }: { params: { id: string } }) {
               <span className="tag text-fog">{m.category || "general"}</span>
               <span className="tag text-fog">· #{m.id}</span>
             </div>
-            <h1 className="display text-[clamp(36px,4.6vw,76px)]">{m.question}</h1>
+            <h1 className="display text-[clamp(30px,3.6vw,58px)]">{m.question}</h1>
           </div>
 
           {/* stats */}
           <div className="grid grid-cols-2 border-b border-line sm:grid-cols-3">
             <div className="border-r border-line p-6 sm:p-8">
               <p className="tag text-fog">{open ? "Closes in" : "Closed"}</p>
-              <p className={`num mt-2 ${open ? "text-2xl text-coral sm:text-3xl" : "text-base leading-snug"}`}>{open ? countdown(m.closeTime, now) : fmtDateTime(m.closeTime)}</p>
+              <p className={`num mt-2 ${open ? "text-2xl text-sage sm:text-3xl" : "text-base leading-snug"}`}>{open ? countdown(m.closeTime, now) : fmtDateTime(m.closeTime)}</p>
             </div>
             <div className="p-6 sm:border-r sm:border-line sm:p-8">
               <p className="tag text-fog">Bets published</p>
@@ -96,7 +96,7 @@ export default function MarketPage({ params }: { params: { id: string } }) {
           </div>
 
           {(m.status === "Resolved" || m.status === "Settled") && (
-            <div className="border-b border-line bg-coral p-6 text-ink sm:px-10">
+            <div className="border-b border-line bg-sage p-6 text-ink sm:px-10">
               <p className="tag">Outcome</p>
               <p className="display text-5xl">{m.outcome.toUpperCase()}</p>
               <p className="tag mt-2">{m.status === "Settled" ? `Paid out in ${m.settlementTxCount} private transfers` : "Payouts in progress"}</p>
@@ -110,7 +110,7 @@ export default function MarketPage({ params }: { params: { id: string } }) {
 
           {/* odds */}
           <section className="border-b border-line p-6 sm:p-10">
-            <p className="tag mb-5 text-coral">Odds</p>
+            <p className="tag mb-5 text-sage">Odds</p>
             <OddsBar yesPct={pct} />
             {dec !== null && pct !== null && (
               <div className="num mt-6 grid grid-cols-2 border border-line text-sm">
@@ -132,7 +132,7 @@ export default function MarketPage({ params }: { params: { id: string } }) {
           {/* activity */}
           <section className="border-b border-line p-6 sm:p-10">
             <div className="mb-5 flex items-end justify-between gap-4">
-              <p className="tag text-coral">Activity</p>
+              <p className="tag text-sage">Activity</p>
               <p className="tag text-fog">Who and which side is public. Amounts are not.</p>
             </div>
             <ActivityList marketId={m.id} refreshKey={tick} />
@@ -141,18 +141,18 @@ export default function MarketPage({ params }: { params: { id: string } }) {
           <section className="p-6 text-xs text-fog sm:px-10">
             <p className="num">
               YES pool{" "}
-              <a className="text-coral" href={addressUrl(m.yesPool)} target="_blank" rel="noreferrer">
+              <a className="text-sage" href={addressUrl(m.yesPool)} target="_blank" rel="noreferrer">
                 {shortAddr(m.yesPool)}
               </a>{" "}
               · NO pool{" "}
-              <a className="text-coral" href={addressUrl(m.noPool)} target="_blank" rel="noreferrer">
+              <a className="text-sage" href={addressUrl(m.noPool)} target="_blank" rel="noreferrer">
                 {shortAddr(m.noPool)}
               </a>
             </p>
           </section>
         </div>
 
-        <aside className="border-t border-line lg:sticky lg:top-16 lg:self-start lg:border-t-0">
+        <aside className="border-t border-line lg:sticky lg:top-[72px] lg:self-start lg:border-t-0">
           <BetPanel market={m} onPlaced={() => (setTick((t) => t + 1), reload())} />
         </aside>
       </div>

@@ -78,7 +78,7 @@ export function BetPanel({ market, onPlaced }: { market: Market; onPlaced?: () =
   if (closed) {
     return (
       <div className="p-6 sm:p-8">
-        <p className="tag mb-4 text-coral">Position</p>
+        <p className="tag mb-4 text-sage">Position</p>
         <h3 className="display text-4xl">Betting closed</h3>
         <p className="mt-4 text-sm text-fog">
           {market.status === "Open" ? "This market has passed its close time. New bets are no longer accepted." : `This market is ${market.status.toLowerCase()}. New bets are no longer accepted.`}
@@ -89,7 +89,7 @@ export function BetPanel({ market, onPlaced }: { market: Market; onPlaced?: () =
 
   return (
     <div className="p-6 sm:p-8">
-      <p className="tag mb-4 text-coral">Place a private bet</p>
+      <p className="tag mb-4 text-sage">Place a private bet</p>
 
       <div className="grid grid-cols-2 border border-line" role="radiogroup" aria-label="Side">
         {(["YES", "NO"] as const).map((s) => (
@@ -100,7 +100,7 @@ export function BetPanel({ market, onPlaced }: { market: Market; onPlaced?: () =
             disabled={busy}
             onClick={() => setSide(s)}
             className={`display py-5 text-4xl transition-colors first:border-r first:border-line ${
-              side === s ? (s === "YES" ? "bg-lime text-ink" : "bg-coral text-ink") : "text-fog hover:bg-raised hover:text-bone"
+              side === s ? (s === "YES" ? "bg-mint text-ink" : "bg-clay text-ink") : "text-fog hover:bg-raised hover:text-bone"
             }`}
           >
             {s}
@@ -112,8 +112,8 @@ export function BetPanel({ market, onPlaced }: { market: Market; onPlaced?: () =
         Amount (USDC)
       </label>
       <input id="amount" className="field num text-2xl" inputMode="decimal" placeholder="0.00" value={amountText} disabled={busy} onChange={(e) => setAmountText(e.target.value)} />
-      {amountInvalid && <p className="mt-2 text-xs text-coral">Enter a number with at most {eercDecimals} decimal places.</p>}
-      {tooSmall && <p className="mt-2 text-xs text-coral">Amount must be greater than zero.</p>}
+      {amountInvalid && <p className="mt-2 text-xs text-clay">Enter a number with at most {eercDecimals} decimal places.</p>}
+      {tooSmall && <p className="mt-2 text-xs text-clay">Amount must be greater than zero.</p>}
       <p className="mt-3 text-xs leading-relaxed text-fog">Encrypted before it leaves your browser. Everyone can see that you bet and on which side, never how much.</p>
 
       <div className="mt-6">
@@ -122,7 +122,7 @@ export function BetPanel({ market, onPlaced }: { market: Market; onPlaced?: () =
             Connect wallet to bet
           </button>
         ) : !w.onFuji ? (
-          <button className="btn w-full border border-coral py-4 text-base text-coral hover:bg-coral hover:text-ink" onClick={() => w.ensureNetwork().catch((e) => setError(friendlyError(e)))}>
+          <button className="btn w-full border border-clay py-4 text-base text-clay hover:bg-clay hover:text-ink" onClick={() => w.ensureNetwork().catch((e) => setError(friendlyError(e)))}>
             Switch to Avalanche Fuji
           </button>
         ) : (
@@ -144,7 +144,7 @@ export function BetPanel({ market, onPlaced }: { market: Market; onPlaced?: () =
             const state = ORDER.indexOf(s) < ORDER.indexOf(stage) ? "done" : s === stage ? "active" : "todo";
             return (
               <li key={s} className={`tag flex items-center gap-3 border-b border-line py-2.5 ${state === "todo" ? "text-fog/40" : state === "active" ? "text-bone" : "text-fog"}`}>
-                <span className="w-4">{state === "done" ? <span className="text-lime">✓</span> : state === "active" ? <Spinner /> : null}</span>
+                <span className="w-4">{state === "done" ? <span className="text-mint">✓</span> : state === "active" ? <Spinner /> : null}</span>
                 <span>{STAGE_LABELS[s]}</span>
                 {state === "active" && s === "proof" && <span className="num ml-auto text-fog">{elapsed}s · background worker</span>}
               </li>
@@ -154,7 +154,7 @@ export function BetPanel({ market, onPlaced }: { market: Market; onPlaced?: () =
       )}
       {busy && stage === "proof" && (
         <div className="mt-3 h-1 overflow-hidden bg-raised">
-          <div className="h-full w-1/3 animate-sheen bg-gradient-to-r from-transparent via-coral to-transparent bg-[length:200%_100%]" />
+          <div className="h-full w-1/3 animate-sheen bg-gradient-to-r from-transparent via-sage to-transparent bg-[length:200%_100%]" />
         </div>
       )}
 
@@ -162,7 +162,7 @@ export function BetPanel({ market, onPlaced }: { market: Market; onPlaced?: () =
         <div className="mt-5 space-y-2">
           <Banner tone={error.code === "REJECTED" ? "warn" : "error"}>{error.message}</Banner>
           {error.code === "NO_USDC" && (
-            <a className="tag text-coral underline underline-offset-4" href={config.usdcFaucetUrl} target="_blank" rel="noreferrer">
+            <a className="tag text-sage underline underline-offset-4" href={config.usdcFaucetUrl} target="_blank" rel="noreferrer">
               Open the USDC faucet ↗
             </a>
           )}

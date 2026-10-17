@@ -4,9 +4,9 @@ import { shortHash } from "@/lib/format";
 import type { Market, StatusName } from "@/lib/chain";
 
 const STATUS_STYLE: Record<StatusName, { box: string; dot: string }> = {
-  Open: { box: "border-lime text-lime group-hover:border-ink group-hover:text-ink", dot: "bg-lime group-hover:bg-ink" },
+  Open: { box: "border-mint text-mint group-hover:border-ink group-hover:text-ink", dot: "bg-mint group-hover:bg-ink" },
   Closed: { box: "border-bone text-bone group-hover:border-ink group-hover:text-ink", dot: "bg-bone group-hover:bg-ink" },
-  Resolved: { box: "border-coral text-coral group-hover:border-ink group-hover:text-ink", dot: "bg-coral group-hover:bg-ink" },
+  Resolved: { box: "border-sage text-sage group-hover:border-ink group-hover:text-ink", dot: "bg-sage group-hover:bg-ink" },
   Settled: { box: "border-line text-fog group-hover:border-ink group-hover:text-ink", dot: "bg-fog group-hover:bg-ink" },
   Cancelled: { box: "border-line text-fog line-through group-hover:border-ink group-hover:text-ink", dot: "bg-fog group-hover:bg-ink" },
 };
@@ -22,15 +22,15 @@ export function StatusBadge({ status }: { status: StatusName }) {
 }
 
 export function Spinner({ className = "h-4 w-4" }: { className?: string }) {
-  return <span className={`inline-block animate-spin rounded-full border-2 border-fog/30 border-t-coral ${className}`} aria-hidden />;
+  return <span className={`inline-block animate-spin rounded-full border-2 border-fog/30 border-t-sage ${className}`} aria-hidden />;
 }
 
 export function Banner({ tone = "info", children }: { tone?: "info" | "warn" | "error" | "ok"; children: React.ReactNode }) {
   const t = {
     info: "border-l-bone",
-    warn: "border-l-coral",
-    error: "border-l-coral bg-coral/10",
-    ok: "border-l-lime bg-lime/5",
+    warn: "border-l-clay",
+    error: "border-l-clay bg-clay/10",
+    ok: "border-l-mint bg-mint/5",
   }[tone];
   return (
     <div role={tone === "error" ? "alert" : "status"} className={`border border-line border-l-4 bg-panel px-4 py-3 text-sm ${t}`}>
@@ -41,7 +41,7 @@ export function Banner({ tone = "info", children }: { tone?: "info" | "warn" | "
 
 export function TxLink({ hash, label }: { hash: string; label?: string }) {
   return (
-    <a href={txUrl(hash)} target="_blank" rel="noreferrer" className="num text-coral underline decoration-coral/40 underline-offset-4 hover:decoration-coral">
+    <a href={txUrl(hash)} target="_blank" rel="noreferrer" className="num text-sage underline decoration-sage/40 underline-offset-4 hover:decoration-sage">
       {label ?? shortHash(hash)} ↗
     </a>
   );
@@ -49,8 +49,8 @@ export function TxLink({ hash, label }: { hash: string; label?: string }) {
 
 /** YES/NO split of the PUBLISHED totals. A flat bar with hard edges; neutral when nothing is published. */
 export function OddsBar({ yesPct, invertOnHover = false }: { yesPct: number | null; invertOnHover?: boolean }) {
-  const yes = invertOnHover ? "bg-lime group-hover:bg-ink" : "bg-lime";
-  const no = invertOnHover ? "bg-coral group-hover:bg-bone" : "bg-coral";
+  const yes = invertOnHover ? "bg-mint group-hover:bg-ink" : "bg-mint";
+  const no = invertOnHover ? "bg-clay group-hover:bg-bone" : "bg-clay";
   const track = invertOnHover ? "bg-raised group-hover:bg-ink/20" : "bg-raised";
   if (yesPct === null) {
     return (
@@ -74,13 +74,13 @@ export function OddsBar({ yesPct, invertOnHover = false }: { yesPct: number | nu
   );
 }
 
-/** One market as a ruled table row. Inverts to coral on hover. */
+/** One market as a ruled table row. Inverts to sage on hover. */
 export function MarketRow({ m, yesPct, countdownText, index }: { m: Market; yesPct: number | null; countdownText: string; index: number }) {
   const live = m.status === "Open";
   return (
     <Link
       href={`/markets/${m.id}`}
-      className="group grid grid-cols-[auto_1fr] gap-x-5 gap-y-5 border-b border-line px-4 py-6 transition-colors duration-200 hover:bg-coral hover:text-ink sm:px-8 md:grid-cols-[72px_1fr_260px_150px] md:items-center md:gap-x-8"
+      className="group grid grid-cols-[auto_1fr] gap-x-5 gap-y-5 border-b border-line px-4 py-6 transition-colors duration-200 hover:bg-sage hover:text-ink sm:px-8 md:grid-cols-[72px_1fr_260px_150px] md:items-center md:gap-x-8"
     >
       <span className="num pt-1 text-sm text-fog group-hover:text-ink/70 md:pt-0">{String(index).padStart(2, "0")}</span>
       <div className="min-w-0">
@@ -89,7 +89,7 @@ export function MarketRow({ m, yesPct, countdownText, index }: { m: Market; yesP
           <span className="tag text-fog group-hover:text-ink/70">{m.category || "general"}</span>
           <span className="tag text-fog group-hover:text-ink/70">· #{m.id}</span>
         </div>
-        <h3 className="display text-[26px] sm:text-[34px]">{m.question}</h3>
+        <h3 className="display text-[22px] sm:text-[28px]">{m.question}</h3>
       </div>
       <div className="col-span-2 md:col-span-1">
         <OddsBar yesPct={yesPct} invertOnHover />

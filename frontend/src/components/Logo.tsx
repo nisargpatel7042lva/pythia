@@ -3,7 +3,7 @@ import Link from "next/link";
 /**
  * The PYTHIA mark: an isometric "P" built from slabs. The small block inside the bowl is a
  * redaction: the bet amount that never leaves the browser in the clear.
- * Drawn on a 120 x 124 grid; uses currentColor so it works on coral, ink or bone.
+ * Drawn on a 120 x 124 grid; uses currentColor so it works on sage, ink or bone.
  */
 export function Logomark({ size = 28, className = "" }: { size?: number; className?: string }) {
   return (
@@ -25,8 +25,8 @@ export function Wordmark({ className = "" }: { className?: string }) {
 export function Logo({ tone = "bone", href = "/" }: { tone?: "bone" | "ink"; href?: string }) {
   return (
     <Link href={href} aria-label="PYTHIA home" className={`flex items-center gap-2.5 ${tone === "ink" ? "text-ink" : "text-bone"}`}>
-      <Logomark size={26} className={tone === "ink" ? "text-ink" : "text-coral"} />
-      <Wordmark className="text-[22px] leading-none" />
+      <Logomark size={32} className={tone === "ink" ? "text-ink" : "text-sage"} />
+      <Wordmark className="text-[26px] leading-none" />
     </Link>
   );
 }

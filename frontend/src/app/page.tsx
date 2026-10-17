@@ -75,7 +75,7 @@ function Spec({ rows }: { rows: [string, string][] }) {
 function Marquee({ items }: { items: React.ReactNode[] }) {
   if (items.length === 0) return <div className="h-12 bg-ink" />;
   return (
-    <div className="overflow-hidden border-y border-ink bg-ink py-3.5 text-coral" aria-label="Live activity">
+    <div className="overflow-hidden border-y border-ink bg-ink py-3.5 text-sage" aria-label="Live activity">
       <div className="flex w-max animate-marquee gap-12 whitespace-nowrap hover:[animation-play-state:paused]">
         {[...items, ...items].map((it, i) => (
           <span key={i} className="tag flex items-center gap-12">
@@ -130,7 +130,7 @@ export default function Landing() {
     for (const b of activity) {
       out.push(
         <span key={b.txHash} className="flex items-center gap-3">
-          {shortAddr(b.bettor)} → {b.side} <span className="redact !bg-coral" style={{ minWidth: "5.5em", height: "0.85em" }} /> hidden
+          {shortAddr(b.bettor)} → {b.side} <span className="redact !bg-sage" style={{ minWidth: "5.5em", height: "0.85em" }} /> hidden
         </span>,
       );
     }
@@ -139,23 +139,24 @@ export default function Landing() {
 
   return (
     <div>
-      {/* ── HERO: coral, ruled, like the reference ───────────────────────── */}
-      <section className="bg-coral text-ink">
-        <Frame tone="coral">
+      {/* ── HERO: sage, ruled, like the reference ───────────────────────── */}
+      <section className="bg-sage text-ink">
+        <Frame tone="sage">
           <div className="grid lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
             <div className="relative flex min-h-[560px] flex-col justify-between border-b border-ink p-6 sm:p-10 lg:min-h-[680px] lg:border-b-0 lg:border-r">
               <div>
                 <p className="tag mb-8 flex items-center gap-3 animate-rise">
                   <span className="h-2 w-2 bg-ink" /> Private prediction markets
                 </p>
-                <h1 className="display animate-rise text-[clamp(44px,6.3vw,104px)]" style={{ animationDelay: "80ms" }}>
+                <h1 className="display animate-rise text-[clamp(40px,5.3vw,86px)]" style={{ animationDelay: "80ms" }}>
                   On Polymarket, your bet size is{" "}
-                  <span className="text-transparent [-webkit-text-stroke:2px_#0A0A0B]">public.</span>{" "}
+                  <span className="text-transparent [-webkit-text-stroke:2px_#0B1112]">public.</span>{" "}
+                  <br className="hidden sm:block" />
                   <span className="redact-title">On PYTHIA, it isn&apos;t.</span>
                 </h1>
               </div>
               <div className="mt-14 animate-rise" style={{ animationDelay: "220ms" }}>
-                <p className="max-w-lg text-[22px] font-medium leading-snug tracking-[-0.02em] sm:text-[26px]">
+                <p className="max-w-lg text-[20px] font-medium leading-snug tracking-[-0.02em] sm:text-[23px]">
                   Who bet and which side is public. How much is hidden, encrypted on-chain with eERC.
                 </p>
                 <div className="mt-8 flex flex-wrap gap-3">
@@ -179,7 +180,7 @@ export default function Landing() {
                 <div className="draw-y absolute inset-y-0 left-1/3 w-px bg-ink/70" />
                 <div className="draw-y absolute inset-y-0 right-1/4 w-px bg-ink/70" style={{ animationDelay: "150ms" }} />
                 <div className="animate-rise" style={{ animationDelay: "300ms" }}>
-                  <Logomark size={300} className="text-ink drop-shadow-none" />
+                  <Logomark size={210} className="text-ink drop-shadow-none" />
                 </div>
               </div>
               <Spec
@@ -208,7 +209,7 @@ export default function Landing() {
           ].map(([label, n], i) => (
             <div key={label as string} className={`border-line p-6 sm:p-8 ${i % 2 === 0 ? "border-r" : ""} ${i < 2 ? "border-b md:border-b-0" : ""} ${i === 1 ? "md:border-r" : ""}`}>
               <p className="tag text-fog">{label as string}</p>
-              <p className="display mt-3 text-6xl text-coral sm:text-7xl">{markets ? <CountUp to={n as number} /> : "·"}</p>
+              <p className="display mt-3 text-5xl text-sage sm:text-6xl">{markets ? <CountUp to={n as number} /> : "·"}</p>
             </div>
           ))}
         </div>
@@ -217,8 +218,8 @@ export default function Landing() {
         <section id="proof" className="scroll-mt-20 border-b border-line">
           <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
             <Reveal className="border-b border-line p-6 sm:p-10 lg:border-b-0 lg:border-r">
-              <p className="tag mb-6 text-coral">Anatomy of a bet</p>
-              <h2 className="display text-[clamp(36px,4.4vw,68px)]">Same chain. Different transparency.</h2>
+              <p className="tag mb-6 text-sage">Anatomy of a bet</p>
+              <h2 className="display text-[clamp(32px,3.6vw,54px)]">Same chain. Different transparency.</h2>
               <p className="mt-6 max-w-md text-fog">
                 Both transactions below are real and read live from Avalanche Fuji right now. One reveals its amount in plain sight. The other carries only proof and ciphertext.
               </p>
@@ -233,8 +234,8 @@ export default function Landing() {
         {/* ── HOW IT WORKS ──────────────────────────────────────────────── */}
         <section className="grid border-b border-line md:grid-cols-3">
           {STEPS.map((s, i) => (
-            <Reveal key={s.n} delay={i * 90} className={`group p-6 transition-colors hover:bg-coral hover:text-ink sm:p-10 ${i < 2 ? "md:border-r md:border-line" : ""} ${i < 2 ? "border-b border-line md:border-b-0" : ""}`}>
-              <p className="display text-[120px] text-transparent [-webkit-text-stroke:1.5px_#F3EEE6] group-hover:[-webkit-text-stroke:1.5px_#0A0A0B]">{s.n}</p>
+            <Reveal key={s.n} delay={i * 90} className={`group p-6 transition-colors hover:bg-sage hover:text-ink sm:p-10 ${i < 2 ? "md:border-r md:border-line" : ""} ${i < 2 ? "border-b border-line md:border-b-0" : ""}`}>
+              <p className="display text-[84px] text-transparent [-webkit-text-stroke:1.5px_#EFE9DD] group-hover:[-webkit-text-stroke:1.5px_#0B1112]">{s.n}</p>
               <h3 className="display mt-8 text-4xl">{s.title}</h3>
               <p className="mt-4 text-fog group-hover:text-ink/80">{s.body}</p>
             </Reveal>
@@ -245,8 +246,8 @@ export default function Landing() {
         <section>
           <div className="flex items-end justify-between border-b border-line p-6 sm:p-10">
             <div>
-              <p className="tag mb-4 text-coral">Live on Fuji</p>
-              <h2 className="display text-[clamp(36px,4.4vw,68px)]">Markets</h2>
+              <p className="tag mb-4 text-sage">Live on Fuji</p>
+              <h2 className="display text-[clamp(32px,3.6vw,54px)]">Markets</h2>
             </div>
             <Link href="/markets" className="btn-ghost">
               All markets →
@@ -259,13 +260,13 @@ export default function Landing() {
         </section>
       </Frame>
 
-      {/* ── TRUST: coral band, honest ─────────────────────────────────────── */}
-      <section id="trust" className="mt-24 scroll-mt-16 bg-coral text-ink">
-        <Frame tone="coral">
+      {/* ── TRUST: sage band, honest ─────────────────────────────────────── */}
+      <section id="trust" className="mt-24 scroll-mt-16 bg-sage text-ink">
+        <Frame tone="sage">
           <div className="grid lg:grid-cols-2">
             <div className="border-b border-ink p-6 sm:p-10 lg:border-b-0 lg:border-r">
               <p className="tag mb-6">Honest about trust</p>
-              <h2 className="display text-[clamp(36px,4.6vw,72px)]">Private from everyone watching. Not from the resolver.</h2>
+              <h2 className="display text-[clamp(32px,3.8vw,58px)]">Private from everyone watching. Not from the resolver.</h2>
               <p className="mt-6 max-w-lg text-lg font-medium leading-snug">
                 In v1 the resolver holds the pool accounts and is trusted for custody and settlement. It can see every stake, and so can the eERC auditor key. We say so up front.
               </p>
@@ -317,7 +318,7 @@ function TxPanel({
     <div className={`flex flex-col border-t md:border-t-0 md:first:border-r ${bg}`}>
       <p className={`tag border-b px-6 py-4 ${light ? "border-ink/20" : "border-line"}`}>{title}</p>
       <div className="flex-1 space-y-4 p-6 text-sm">
-        {error && <p className="text-coral">Could not read this transaction right now.</p>}
+        {error && <p className="text-sage">Could not read this transaction right now.</p>}
         {!facts && !error && <p className={muted}>Reading from the chain…</p>}
         {facts && (
           <>
@@ -330,12 +331,12 @@ function TxPanel({
                 <p className="display text-5xl">{amount}</p>
               ) : (
                 <div className="flex items-center gap-3">
-                  <span className="redact !h-12 !min-w-[8rem] !bg-coral" />
-                  <span className="tag text-coral">not on-chain</span>
+                  <span className="redact !h-12 !min-w-[8rem] !bg-sage" />
+                  <span className="tag text-sage">not on-chain</span>
                 </div>
               )}
             </div>
-            <a className={`tag inline-block underline underline-offset-4 ${light ? "" : "text-coral"}`} href={txUrl(facts.hash)} target="_blank" rel="noreferrer">
+            <a className={`tag inline-block underline underline-offset-4 ${light ? "" : "text-sage"}`} href={txUrl(facts.hash)} target="_blank" rel="noreferrer">
               View on Snowtrace ↗
             </a>
           </>

@@ -9,8 +9,8 @@ import { useHealth, useOwner } from "@/lib/hooks";
 import { useWallet } from "@/lib/wallet";
 
 /** Max-width frame with hairline side rules: the page grid every screen sits in. */
-export function Frame({ children, className = "", tone = "ink" }: { children: React.ReactNode; className?: string; tone?: "ink" | "coral" }) {
-  return <div className={`mx-auto max-w-[1440px] border-x ${tone === "coral" ? "border-ink" : "border-line"} ${className}`}>{children}</div>;
+export function Frame({ children, className = "", tone = "ink" }: { children: React.ReactNode; className?: string; tone?: "ink" | "sage" }) {
+  return <div className={`mx-auto max-w-[1440px] border-x ${tone === "sage" ? "border-ink" : "border-line"} ${className}`}>{children}</div>;
 }
 
 export function Nav() {
@@ -19,7 +19,7 @@ export function Nav() {
   const owner = useOwner();
   const health = useHealth();
   const [menu, setMenu] = useState(false);
-  const onCoral = path === "/";
+  const onSage = path === "/";
   const isOwner = !!w.address && !!owner.data && w.address.toLowerCase() === owner.data.toLowerCase();
   const links = [
     { href: "/markets", label: "Markets" },
@@ -28,13 +28,13 @@ export function Nav() {
   ];
   const online = !!health.data?.ok;
 
-  const line = onCoral ? "border-ink" : "border-line";
+  const line = onSage ? "border-ink" : "border-line";
   return (
-    <header className={`sticky top-0 z-30 ${onCoral ? "bg-coral text-ink" : "bg-ink/95 text-bone backdrop-blur"}`}>
-      <Frame tone={onCoral ? "coral" : "ink"}>
-        <div className={`flex h-16 items-stretch border-b ${line}`}>
+    <header className={`sticky top-0 z-30 ${onSage ? "bg-sage text-ink" : "bg-ink/95 text-bone backdrop-blur"}`}>
+      <Frame tone={onSage ? "sage" : "ink"}>
+        <div className={`flex h-[72px] items-stretch border-b ${line}`}>
           <div className={`flex items-center border-r px-4 sm:px-6 lg:w-[300px] ${line}`}>
-            <Logo tone={onCoral ? "ink" : "bone"} />
+            <Logo tone={onSage ? "ink" : "bone"} />
           </div>
 
           <nav className="hidden flex-1 items-stretch md:flex" aria-label="Primary">
@@ -45,7 +45,7 @@ export function Nav() {
                   key={l.href}
                   href={l.href}
                   className={`tag flex items-center border-r px-6 transition-colors ${line} ${
-                    onCoral ? (active ? "bg-ink text-coral" : "hover:bg-ink hover:text-coral") : active ? "bg-coral text-ink" : "text-fog hover:bg-raised hover:text-bone"
+                    onSage ? (active ? "bg-ink text-sage" : "hover:bg-ink hover:text-sage") : active ? "bg-sage text-ink" : "text-fog hover:bg-raised hover:text-bone"
                   }`}
                 >
                   {l.label}
@@ -54,17 +54,17 @@ export function Nav() {
             })}
             <div className="flex-1" />
             <span
-              className={`tag hidden items-center gap-2 border-l px-5 lg:flex ${line} ${online ? "" : onCoral ? "" : "text-coral"}`}
+              className={`tag hidden items-center gap-2 border-l px-5 lg:flex ${line} ${online ? "" : onSage ? "" : "text-clay"}`}
               title={online ? "Resolver online" : "Resolver unreachable: activity feed unavailable"}
             >
-              <span className={`h-1.5 w-1.5 rounded-full ${online ? (onCoral ? "bg-ink" : "bg-lime") : onCoral ? "bg-ink/40" : "bg-coral"}`} />
+              <span className={`h-1.5 w-1.5 rounded-full ${online ? (onSage ? "bg-ink" : "bg-mint") : onSage ? "bg-ink/40" : "bg-clay"}`} />
               {online ? "Resolver live" : health.loading ? "…" : "Resolver offline"}
             </span>
           </nav>
 
           <div className={`ml-auto flex items-center gap-2 px-3 md:ml-0 md:border-l md:px-4 ${line}`}>
-            <WalletButton onCoral={onCoral} />
-            <button className={`${onCoral ? "btn-outline-ink" : "btn-ghost"} px-3 md:hidden`} aria-label="Menu" aria-expanded={menu} onClick={() => setMenu((m) => !m)}>
+            <WalletButton onSage={onSage} />
+            <button className={`${onSage ? "btn-outline-ink" : "btn-ghost"} px-3 md:hidden`} aria-label="Menu" aria-expanded={menu} onClick={() => setMenu((m) => !m)}>
               <span className="block h-0.5 w-4 bg-current shadow-[0_5px_0_currentColor,0_-5px_0_currentColor]" />
             </button>
           </div>
@@ -99,7 +99,7 @@ export function Footer() {
               <ul className="space-y-2 text-sm">
                 {(items as string[][]).map(([label, href]) => (
                   <li key={label}>
-                    <Link href={href} className="hover:text-coral" {...(href.startsWith("http") ? { target: "_blank", rel: "noreferrer" } : {})}>
+                    <Link href={href} className="hover:text-sage" {...(href.startsWith("http") ? { target: "_blank", rel: "noreferrer" } : {})}>
                       {label}
                     </Link>
                   </li>
@@ -108,7 +108,7 @@ export function Footer() {
             </div>
           ))}
           <div className="flex flex-col justify-between bg-ink p-6">
-            <Logomark size={44} className="text-coral" />
+            <Logomark size={44} className="text-sage" />
             <p className="tag mt-6 text-fog">
               Testnet. Unaudited.
               <br />
@@ -117,7 +117,7 @@ export function Footer() {
           </div>
         </div>
         <div className="select-none overflow-hidden px-2 pt-6 text-center" aria-hidden="true">
-          <span className="display block text-[26vw] leading-[0.78] text-coral/90 min-[1440px]:text-[370px]">PYTHIA</span>
+          <span className="display block text-[20vw] leading-[0.78] text-sage/[0.16] min-[1440px]:text-[290px]">PYTHIA</span>
         </div>
       </Frame>
     </footer>

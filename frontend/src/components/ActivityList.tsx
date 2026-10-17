@@ -43,8 +43,8 @@ export function ActivityList({ marketId, refreshKey }: { marketId: number; refre
     <ul className="border-t border-line">
       {[...bets].reverse().map((b) => (
         <li key={b.txHash} className="grid grid-cols-[56px_1fr_auto] items-center gap-x-4 gap-y-1 border-b border-line py-3.5 text-sm sm:grid-cols-[56px_1fr_150px_auto]">
-          <span className={`tag font-semibold ${b.side === "YES" ? "text-lime" : "text-coral"}`}>{b.side}</span>
-          <a href={addressUrl(b.bettor)} target="_blank" rel="noreferrer" className="num truncate hover:text-coral">
+          <span className={`tag font-semibold ${b.side === "YES" ? "text-mint" : "text-clay"}`}>{b.side}</span>
+          <a href={addressUrl(b.bettor)} target="_blank" rel="noreferrer" className="num truncate hover:text-sage">
             {shortAddr(b.bettor)}
           </a>
           <span className="flex items-center gap-2" title="Bet sizes are encrypted on-chain">
