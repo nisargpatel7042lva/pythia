@@ -62,22 +62,20 @@ needs *some* public numbers (odds) to work at all.
 
 ```mermaid
 sequenceDiagram
-  autonumber
-  actor U as Bettor (browser)
-  participant E as EncryptedERC (Fuji)
-  participant R as Resolver (trusted, v1)
+  participant U as Bettor browser
+  participant E as EncryptedERC
+  participant R as Resolver
   participant M as PythiaMarkets
 
-  U->>U: Encrypt amount, build zero-knowledge proof (Web Worker, about 1 s)
-  U->>E: Private transfer to the YES or NO pool (proof + ciphertext, no amount)
-  E-->>R: PrivateTransfer event
-  R->>R: Decrypt with the pool key, add to the ledger, cross-check the pool balance
-  Note over R,M: After K or more new bets
-  R->>M: publishTotals (batched odds)
-  Note over R,M: Market closes, then resolves (Chainlink or manual)
+  Note over U: Encrypt amount and build zk proof, about 1 second
+  U->>E: Private transfer to the YES or NO pool
+  E->>R: PrivateTransfer event
+  Note over R: Decrypt with pool key, update ledger, cross-check balance
+  R->>M: publishTotals after K or more new bets
+  Note over R,M: Market closes, then resolves via Chainlink or manual
   R->>E: Private payout transfers to winners
   R->>M: markSettled
-  U->>U: Decrypt own bets and payouts locally (portfolio)
+  Note over U: Decrypt own bets and payouts locally
 ```
 
 1. **Pools.** Each market has a YES pool and a NO pool: fresh accounts registered on the eERC
