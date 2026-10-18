@@ -6,6 +6,7 @@
  * frontend API (see api.ts). SIGINT/SIGTERM stop it gracefully (a payout in progress pauses after
  * the current transfer and resumes on restart).
  */
+import { makeProvider } from "./rpc.js";
 import { ethers } from "ethers";
 import { createApiServer } from "./api.js";
 import { ChainExecutor } from "./chainExecutor.js";
@@ -17,7 +18,7 @@ import { log } from "./log.js";
 import { createPoolPair } from "./pools.js";
 
 const cfg = loadConfig();
-const provider = new ethers.JsonRpcProvider(cfg.rpcUrl, undefined, { staticNetwork: true });
+const provider = makeProvider(cfg.rpcUrl);
 const resolver = new ethers.Wallet(resolverPrivateKey(), provider);
 const keystore = new Keystore(cfg.keystoreDir, keystorePassword());
 const ledger = new Ledger(cfg, keystore);
@@ -60,7 +61,14 @@ log.info(`pools in keystore: ${keystore.list().filter((p) => p.marketId).length}
 
 while (!stopping) {
   try {
-    await engine.tick();
+    // Watchdog: a tick should take seconds; log loudly if one is stuck instead of hanging silently.
+    const started = Date.now();
+    const watchdog = setInterval(() => log.warn(`tick running for ${Math.round((Date.now() - started) / 1000)}s (possible stuck RPC call)`), 120_000);
+    try {
+      await engine.tick();
+    } finally {
+      clearInterval(watchdog);
+    }
   } catch (e) {
     log.error(`tick failed: ${(e as Error).message}`);
   }

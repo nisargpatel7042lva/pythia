@@ -1,4 +1,5 @@
 import { ethers } from "ethers";
+import { makeProvider } from "./rpc.js";
 import { ENCRYPTED_ERC_ABI, privateTransfer, readEncryptedBalance, type EercClient } from "@pythia/eerc-core";
 import type { BaseConfig } from "./config.js";
 import { makeEercClient } from "./eerc.js";
@@ -29,7 +30,7 @@ export class ChainExecutor implements PoolExecutor {
     private resolver: ethers.Wallet,
     private logger: Logger,
   ) {
-    this.provider = new ethers.JsonRpcProvider(cfg.rpcUrl, undefined, { staticNetwork: true });
+    this.provider = makeProvider(cfg.rpcUrl);
   }
 
   async client(pool: string): Promise<EercClient> {

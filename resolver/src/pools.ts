@@ -1,4 +1,5 @@
 import { ethers } from "ethers";
+import { makeProvider } from "./rpc.js";
 import { getOnChainPublicKey, isRegistered } from "@pythia/eerc-core";
 import type { BaseConfig } from "./config.js";
 import { makeEercClient, snowtraceTx } from "./eerc.js";
@@ -56,7 +57,7 @@ export async function createPoolPair(
   keystore: Keystore,
   resolverKey: `0x${string}`,
 ): Promise<PoolPair> {
-  const provider = new ethers.JsonRpcProvider(cfg.rpcUrl, undefined, { staticNetwork: true });
+  const provider = makeProvider(cfg.rpcUrl);
   const resolver = new ethers.Wallet(resolverKey, provider);
   const need = ethers.parseEther(cfg.poolGasFund) * 2n;
   const bal = await provider.getBalance(resolver.address);

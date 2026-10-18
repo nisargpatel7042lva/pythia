@@ -6,6 +6,7 @@
  * --wallet N reads BETTOR_PRIVATE_KEY_N. --amount is in eERC units of USDC (2 decimals).
  * Registers the bettor on eERC if needed and deposits USDC when the encrypted balance is short.
  */
+import { makeProvider } from "../src/rpc.js";
 import { parseArgs } from "node:util";
 import { ethers } from "ethers";
 import { createNodeWalletClient, deposit, isRegistered, privateTransfer, readEncryptedBalance, register, resolveDecryptionKey } from "@pythia/eerc-core";
@@ -36,7 +37,7 @@ async function main() {
 
   const cfg = loadConfig();
   const pk = bettorPrivateKey(Number(a.wallet));
-  const provider = new ethers.JsonRpcProvider(cfg.rpcUrl, undefined, { staticNetwork: true });
+  const provider = makeProvider(cfg.rpcUrl);
   const signer = new ethers.Wallet(pk, provider);
 
   // Market + pool for the chosen side.

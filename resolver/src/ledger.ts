@@ -10,6 +10,7 @@
  * Idempotency: bets are keyed by UNIQUE(tx_hash, log_index) and inserted with INSERT OR IGNORE, so
  * re-processing any block range never duplicates rows; the stored cursor only saves work.
  */
+import { makeProvider } from "./rpc.js";
 import fs from "node:fs";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
@@ -73,7 +74,7 @@ export class Ledger {
       CREATE INDEX IF NOT EXISTS bets_market ON bets (market_id, side);
       CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
     `);
-    this.provider = new ethers.JsonRpcProvider(cfg.rpcUrl, undefined, { staticNetwork: true });
+    this.provider = makeProvider(cfg.rpcUrl);
   }
 
   close() {

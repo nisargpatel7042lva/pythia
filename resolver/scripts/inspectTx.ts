@@ -7,6 +7,7 @@
  * The amount is searched in every representation a plaintext leak could take: eERC units
  * (2 decimals), USDC units (6 decimals), 18-decimals, and the decimal string / hex ASCII.
  */
+import { makeProvider } from "../src/rpc.js";
 import { ethers } from "ethers";
 import { ENCRYPTED_ERC_ABI } from "@pythia/eerc-core";
 import { loadConfig } from "../src/config.js";
@@ -15,7 +16,7 @@ async function main() {
   const [hash, amountStr] = process.argv.slice(2);
   if (!hash || !amountStr) throw new Error("usage: inspectTx.ts <txHash> <amount>");
   const cfg = loadConfig();
-  const p = new ethers.JsonRpcProvider(cfg.rpcUrl, undefined, { staticNetwork: true });
+  const p = makeProvider(cfg.rpcUrl);
   const iface = new ethers.Interface(ENCRYPTED_ERC_ABI);
   const tx = (await p.getTransaction(hash))!;
   const rc = (await p.getTransactionReceipt(hash))!;

@@ -10,6 +10,7 @@
  * --close-in is minutes from now. Env: RESOLVER_PRIVATE_KEY (funds pools), DEPLOYER_PRIVATE_KEY
  * (PythiaMarkets owner), POOL_KEYSTORE_PASSPHRASE.
  */
+import { makeProvider } from "../src/rpc.js";
 import { parseArgs } from "node:util";
 import { ethers } from "ethers";
 import { keystorePassword, loadConfig, loadMarketsAbi, ownerPrivateKey, resolverPrivateKey } from "../src/config.js";
@@ -43,7 +44,7 @@ async function main() {
   if (!(closeInMin > 0)) throw new Error("--close-in must be a positive number of minutes");
 
   const cfg = loadConfig();
-  const provider = new ethers.JsonRpcProvider(cfg.rpcUrl, undefined, { staticNetwork: true });
+  const provider = makeProvider(cfg.rpcUrl);
   const owner = new ethers.Wallet(ownerPrivateKey(), provider);
   const markets = new ethers.Contract(cfg.marketsAddress, loadMarketsAbi() as ethers.InterfaceAbi, owner);
   if ((await markets.owner()).toLowerCase() !== owner.address.toLowerCase()) {

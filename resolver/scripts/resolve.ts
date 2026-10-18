@@ -4,6 +4,7 @@
  * Closes the market if needed, makes sure the final batched totals are published, then calls
  * resolveManual as the resolver. The running service then pays out and settles.
  */
+import { makeProvider } from "../src/rpc.js";
 import { ethers } from "ethers";
 import { ChainExecutor } from "../src/chainExecutor.js";
 import { keystorePassword, loadConfig, resolverPrivateKey } from "../src/config.js";
@@ -19,7 +20,7 @@ async function main() {
     throw new Error("usage: npm run resolve -- <marketId> <yes|no|invalid>");
   }
   const cfg = loadConfig();
-  const provider = new ethers.JsonRpcProvider(cfg.rpcUrl, undefined, { staticNetwork: true });
+  const provider = makeProvider(cfg.rpcUrl);
   const resolver = new ethers.Wallet(resolverPrivateKey(), provider);
   const keystore = new Keystore(cfg.keystoreDir, keystorePassword());
   const ledger = new Ledger(cfg, keystore);
