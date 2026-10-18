@@ -175,12 +175,21 @@ export default function Landing() {
                 <p className="tag border-r border-ink px-6 py-3.5 sm:px-8">System</p>
                 <p className="tag px-6 py-3.5 sm:px-8">Est. 2026</p>
               </div>
-              <div className="relative flex flex-1 items-center justify-center overflow-hidden px-6 py-12 sm:px-8">
-                <div className="draw-x absolute inset-x-0 top-1/3 h-px bg-ink/70" />
-                <div className="draw-y absolute inset-y-0 left-1/3 w-px bg-ink/70" />
-                <div className="draw-y absolute inset-y-0 right-1/4 w-px bg-ink/70" style={{ animationDelay: "150ms" }} />
-                <div className="relative z-10 animate-rise border border-ink bg-sage p-10 sm:p-14" style={{ animationDelay: "300ms" }}>
-                  <Logomark size={150} className="text-ink" />
+              {/* Square logo cell. The four rules are the box's own edges extended to the cell border,
+                  so every line meets the box exactly and the mark sits dead centre. */}
+              <div
+                className="relative flex flex-1 items-center justify-center overflow-hidden px-6 py-12 sm:px-8"
+                style={{ ["--box" as string]: "280px" }}
+              >
+                <div className="draw-x absolute inset-x-0 z-10 h-px bg-ink" style={{ top: "calc(50% - var(--box) / 2)" }} />
+                <div className="draw-x absolute inset-x-0 z-10 h-px bg-ink" style={{ top: "calc(50% + var(--box) / 2)", animationDelay: "100ms" }} />
+                <div className="draw-y absolute inset-y-0 z-10 w-px bg-ink" style={{ left: "calc(50% - var(--box) / 2)" }} />
+                <div className="draw-y absolute inset-y-0 z-10 w-px bg-ink" style={{ left: "calc(50% + var(--box) / 2)", animationDelay: "100ms" }} />
+                <div
+                  className="relative z-0 flex animate-rise items-center justify-center bg-sage"
+                  style={{ width: "var(--box)", height: "var(--box)", animationDelay: "300ms" }}
+                >
+                  <Logomark size={140} className="text-ink" />
                 </div>
               </div>
               <Spec
