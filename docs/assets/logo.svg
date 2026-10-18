@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 124" width="120" height="124" role="img" aria-label="PYTHIA logo" fill="#A8C8B8">
+  <polygon points="32,6 112,6 90,28 10,28"/>
+  <polygon points="112,6 112,52 90,74 90,28" opacity="0.72"/>
+  <polygon points="32,52 112,52 90,74 10,74"/>
+  <polygon points="10,74 32,52 32,96 10,118" opacity="0.72"/>
+</svg>

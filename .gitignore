@@ -30,3 +30,6 @@ npm-debug.log*
 
 # frontend: circuits are copied from eerc-core at build time
 frontend/public/circuits/
+
+# local agent notes
+CLAUDE.md

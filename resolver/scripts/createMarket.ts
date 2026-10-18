@@ -18,7 +18,7 @@ import { snowtraceAddress, snowtraceTx } from "../src/eerc.js";
 import { Keystore } from "../src/keystore.js";
 import { createPoolPair } from "../src/pools.js";
 
-const FUJI_AVAX_USD = "0x5498BB86BC934c8D34FDA08E81D444153d0D06aD"; // Chainlink, see CLAUDE.md
+const FUJI_AVAX_USD = "0x5498BB86BC934c8D34FDA08E81D444153d0D06aD"; // Chainlink AVAX/USD on Fuji
 const FEED_ABI = [
   "function decimals() view returns (uint8)",
   "function description() view returns (string)",
