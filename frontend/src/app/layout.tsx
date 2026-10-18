@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Inter_Tight, JetBrains_Mono } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 import { Footer, Nav } from "@/components/Nav";
 import { SessionProvider } from "@/lib/session";
@@ -26,6 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Footer />
           </SessionProvider>
         </WalletProvider>
+        <Analytics />
       </body>
     </html>
   );
