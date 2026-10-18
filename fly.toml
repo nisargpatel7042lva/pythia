@@ -1,0 +1,39 @@
+# Fly.io config for the PYTHIA resolver. Secrets (never committed) are set with `fly secrets set`:
+#   RESOLVER_PRIVATE_KEY, POOL_KEYSTORE_PASSPHRASE
+app = "pythia-resolver"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  FUJI_RPC_URL = "https://api.avax-test.network/ext/bc/C/rpc"
+  EERC_ADDRESS = "0xFd9E9E078341f18bA29c14404D17D2f7ef1d63D8"
+  REGISTRAR_ADDRESS = "0x281D95Fbe23b4Ec33EcF6d4e174F57AA2A0bE6c9"
+  USDC_ADDRESS = "0x5425890298aed601595a70AB815c96711a31Bc65"
+  PYTHIA_MARKETS_ADDRESS = "0xe21D7327eAd6E53AF7549Bd82942C03DF8c7eF44"
+  POOL_GAS_FUND = "0.02"
+  BATCH_MIN_BETS = "3"
+  RESOLVER_POLL_INTERVAL_MS = "10000"
+  RESOLVER_API_HOST = "0.0.0.0"
+  RESOLVER_API_PORT = "8080"
+  RESOLVER_API_CORS_ORIGIN = "*"
+
+[mounts]
+  source = "pythia_data"
+  destination = "/data"
+
+# The service must stay running (it publishes odds, resolves and pays out), so never scale to zero.
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "off"
+  auto_start_machines = false
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    method = "GET"
+    path = "/health"
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "40s"
