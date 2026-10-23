@@ -22,6 +22,7 @@ import type { Keystore, PoolMeta, Side } from "./keystore.js";
 
 const AMOUNT_PCT_FIRST = 16; // proof.publicSignals[16..22] = receiver's amount PCT
 const MAX_PLAUSIBLE_AMOUNT = 10n ** 12n; // eERC units; larger means a wrong key / bad parse
+const EXPLORER_TAIL_BLOCKS = 1500; // newest blocks always re-scanned over RPC after an explorer catch-up
 
 export interface Bet {
   marketId: number;
@@ -213,8 +214,11 @@ export class Ledger {
     let r: { inserted: number; skipped: number };
     const viaApi = to - from > 3000 ? await this.catchUpViaExplorer(from, to, pools) : null;
     if (viaApi) {
-      r = viaApi;
-      this.setCursor(to);
+      // Explorers index with a delay, so their newest blocks can be incomplete. Trust the explorer for the
+      // bulk of the gap and leave the cursor behind the head so the RPC scan re-checks the tail (re-processing
+      // is idempotent). headTime is not advanced until that scan completes.
+      this.setCursor(Math.max(from - 1, to - EXPLORER_TAIL_BLOCKS));
+      return { from, to, ...viaApi };
     } else {
       r = await this.syncRange(from, to, (end) => this.setCursor(end));
     }
