@@ -95,31 +95,57 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   // Keep discovering (wallets may announce after load) and silently reconnect the last wallet.
+  // Extensions often inject a moment after the page hydrates, so a single check at load misses them:
+  // retry whenever the saved wallet shows up, and keep probing for a few seconds.
+  const restoredRef = useRef(false);
   useEffect(() => {
+    let cancelled = false;
+    const last = localStorage.getItem(LAST_KEY);
+
+    const restore = async (w: DiscoveredWallet) => {
+      if (restoredRef.current || cancelled) return;
+      try {
+        const accts = (await w.provider.request({ method: "eth_accounts" })) as string[];
+        if (restoredRef.current || cancelled || !accts[0]) return; // locked or permission revoked: stay disconnected
+        restoredRef.current = true;
+        setActive(w);
+        setAddress(accts[0] as `0x${string}`);
+        setChainId(Number(await w.provider.request({ method: "eth_chainId" })));
+      } catch {
+        /* wallet not ready yet; the next announce or probe will retry */
+      }
+    };
+
     const keep = (e: Event) => {
       const d = (e as CustomEvent).detail as { info: { uuid: string; name: string; icon?: string }; provider: Eip1193 };
-      setWallets((prev) =>
-        prev.some((w) => w.id === d.info.uuid) ? prev : [...prev, { id: d.info.uuid, name: d.info.name, icon: d.info.icon, provider: d.provider }],
-      );
+      const w: DiscoveredWallet = { id: d.info.uuid, name: d.info.name, icon: d.info.icon, provider: d.provider };
+      setWallets((prev) => (prev.some((x) => x.id === w.id) ? prev : [...prev, w]));
+      if (last && w.id === last) void restore(w);
     };
     window.addEventListener("eip6963:announceProvider", keep);
-    const list = discover();
-    const last = localStorage.getItem(LAST_KEY);
-    const w = list.find((x) => x.id === last);
-    if (w) {
-      w.provider
-        .request({ method: "eth_accounts" })
-        .then(async (accts: unknown) => {
-          const a = (accts as string[])[0];
-          if (a) {
-            setActive(w);
-            setAddress(a as `0x${string}`);
-            setChainId(Number(await w.provider.request({ method: "eth_chainId" })));
-          }
-        })
-        .catch(() => {});
-    }
-    return () => window.removeEventListener("eip6963:announceProvider", keep);
+
+    const attempt = (list: DiscoveredWallet[]) => {
+      if (!last) return;
+      const w = list.find((x) => x.id === last);
+      if (w) void restore(w);
+    };
+    attempt(discover());
+
+    // Probe for ~4 s: re-ask for EIP-6963 announcements and look for a late window.ethereum.
+    let tries = 0;
+    const probe = window.setInterval(() => {
+      if (restoredRef.current || cancelled || !last || ++tries > 16) {
+        window.clearInterval(probe);
+        return;
+      }
+      attempt(discover());
+    }, 250);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(probe);
+      window.removeEventListener("eip6963:announceProvider", keep);
+    };
   }, [discover]);
 
   // Follow account / chain changes from the wallet.
@@ -176,6 +202,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
         if (!w) throw new Error("No wallet found. Install MetaMask or Core, then reload this page.");
         const accts = (await w.provider.request({ method: "eth_requestAccounts" })) as string[];
         if (!accts[0]) throw new Error("Your wallet returned no account. Unlock it and try again.");
+        restoredRef.current = true;
         setActive(w);
         setAddress(accts[0] as `0x${string}`);
         localStorage.setItem(LAST_KEY, w.id);
@@ -208,6 +235,7 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     active?.provider.request({ method: "wallet_revokePermissions", params: [{ eth_accounts: {} }] }).catch(() => {});
     sigCache.current.clear();
     localStorage.removeItem(LAST_KEY);
+    restoredRef.current = true; // an explicit disconnect must never be undone by a late auto-restore
     setActive(null);
     setAddress(null);
     setChainId(null);
