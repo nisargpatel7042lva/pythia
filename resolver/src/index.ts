@@ -37,6 +37,7 @@ const api = createApiServer({
   },
   untaggedPools: () => keystore.list().filter((m) => !m.marketId).length,
   trackedMarkets: () => engine.trackedMarkets(),
+  demoWallets: () => (process.env.DEMO_BOT_ADDRESSES ?? "").split(",").map((s) => s.trim()).filter(Boolean),
   logger: log,
   corsOrigin: process.env.RESOLVER_API_CORS_ORIGIN,
 });

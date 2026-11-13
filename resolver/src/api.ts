@@ -2,6 +2,7 @@
  * Small HTTP API for the frontend.
  *
  *   GET  /health                    liveness + ledger freshness
+ *   GET  /demo-wallets              addresses of the automated demo wallets (labelled in the UI)
  *   GET  /markets/:id/activity      who bet and on which side: bettor, side, txHash, block time.
  *                                   NEVER includes amounts (the response is built field by field).
  *   POST /admin/pools               owner-only: create the YES/NO pool pair for a new market.
@@ -34,6 +35,8 @@ export interface ApiDeps {
   /** Number of pools in the keystore not yet attached to a market. */
   untaggedPools(): number;
   trackedMarkets(): number;
+  /** Public addresses of the automated demo wallets, so the UI can label them. Never keys. */
+  demoWallets?(): string[];
   logger: Logger;
   corsOrigin?: string;
   now?: () => number;
@@ -86,6 +89,10 @@ export function createApiServer(deps: ApiDeps): http.Server {
           ledgerLagSec: deps.activity.headTime ? Math.max(0, now() - deps.activity.headTime) : null,
           trackedMarkets: deps.trackedMarkets(),
         });
+      }
+
+      if (req.method === "GET" && url.pathname === "/demo-wallets") {
+        return send(res, 200, { wallets: (deps.demoWallets?.() ?? []).filter((a) => ethers.isAddress(a)) });
       }
 
       const m = /^\/markets\/(\d+)\/activity$/.exec(url.pathname);

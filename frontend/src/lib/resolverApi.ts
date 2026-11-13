@@ -22,6 +22,9 @@ export const fetchActivity = (marketId: number) =>
 export const fetchAccountActivity = (address: string) =>
   getJson<{ address: string; items: { kind: "bet" | "payout"; marketId: number; side: "YES" | "NO"; txHash: string }[] }>(`/accounts/${address}/activity`);
 
+/** Addresses of the automated demo wallets (public addresses only), so the UI can label their bets. */
+export const fetchDemoWallets = () => getJson<{ wallets: string[] }>("/demo-wallets");
+
 export interface Health {
   ok: boolean;
   resolver: string;

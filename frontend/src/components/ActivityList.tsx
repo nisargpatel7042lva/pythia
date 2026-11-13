@@ -5,11 +5,19 @@ import { Banner, TxLink } from "@/components/ui";
 import { addressUrl } from "@/config";
 import { friendlyError } from "@/lib/errors";
 import { fmtDateTime, shortAddr } from "@/lib/format";
-import { fetchActivity, type ActivityBet } from "@/lib/resolverApi";
+import { fetchActivity, fetchDemoWallets, type ActivityBet } from "@/lib/resolverApi";
 
 export function ActivityList({ marketId, refreshKey }: { marketId: number; refreshKey?: number }) {
   const [bets, setBets] = useState<ActivityBet[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [demo, setDemo] = useState<Set<string>>(new Set());
+
+  // Automated demo wallets are labelled so nobody mistakes them for independent users.
+  useEffect(() => {
+    fetchDemoWallets()
+      .then((r) => setDemo(new Set(r.wallets.map((w) => w.toLowerCase()))))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     let alive = true;
@@ -44,9 +52,16 @@ export function ActivityList({ marketId, refreshKey }: { marketId: number; refre
       {[...bets].reverse().map((b) => (
         <li key={b.txHash} className="grid grid-cols-[56px_1fr_auto] items-center gap-x-4 gap-y-1 border-b border-line py-3.5 text-sm sm:grid-cols-[56px_1fr_150px_auto]">
           <span className={`tag font-semibold ${b.side === "YES" ? "text-mint" : "text-clay"}`}>{b.side}</span>
-          <a href={addressUrl(b.bettor)} target="_blank" rel="noreferrer" className="num truncate hover:text-sage">
-            {shortAddr(b.bettor)}
-          </a>
+          <span className="flex min-w-0 items-center gap-2">
+            <a href={addressUrl(b.bettor)} target="_blank" rel="noreferrer" className="num truncate hover:text-sage">
+              {shortAddr(b.bettor)}
+            </a>
+            {demo.has(b.bettor.toLowerCase()) && (
+              <span className="tag shrink-0 border border-line px-1.5 py-0.5 text-fog" title="Automated demo wallet: a real private bet with a small test stake, placed by a script to show how markets work. Not an independent user.">
+                Demo bot
+              </span>
+            )}
+          </span>
           <span className="flex items-center gap-2" title="Bet sizes are encrypted on-chain">
             <span className="redact !h-3.5 !min-w-[3.5rem]" />
             <span className="tag text-fog">Hidden</span>

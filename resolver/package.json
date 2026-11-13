@@ -12,6 +12,7 @@
     "resolve": "tsx scripts/resolve.ts",
     "create-market": "tsx scripts/createMarket.ts",
     "place-bet": "tsx scripts/placeBet.ts",
+    "demo-bots": "tsx scripts/demoBots.ts",
     "ledger": "tsx scripts/ledger.ts"
   },
   "dependencies": {

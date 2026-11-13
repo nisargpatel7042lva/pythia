@@ -232,6 +232,23 @@ shields USDC if your encrypted balance is short (that needs Fuji USDC).
 Deploy the resolver as a long-running service with the included [`Dockerfile`](Dockerfile) and
 [`fly.toml`](fly.toml). It needs a persistent volume for the keystore and ledger.
 
+### Demo bots (automated test wallets)
+
+So a visitor can watch a whole market lifecycle without waiting for real users, a small script keeps
+the demo alive:
+
+```bash
+DEMO_BOT_KEYS=0xkey1,0xkey2 npm run demo-bots -w @pythia/resolver     # runs until stopped (--once for one round)
+```
+
+Each round it keeps at least four short AVAX/USD markets open (closing in 25 minutes to 3 hours, so
+something resolves regularly) and places a few small random bets on the least-populated ones. The bets
+are real private eERC transfers on Fuji from real wallets, with small random stakes and sides; they
+are **not independent users**, and the app labels them "Demo bot" (set `DEMO_BOT_ADDRESSES` on the
+resolver to the bots' public addresses). The script never moves funds between wallets and never fakes
+data: fund the wallets yourself, and if one runs dry its bets simply fail. The resolver must be running
+to publish odds, resolve and pay out.
+
 ## On-chain evidence
 
 Contracts, a private bet next to a plain transfer, and full market lifecycles (create, batched

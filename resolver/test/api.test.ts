@@ -133,3 +133,15 @@ test("admin/pools: refuses when too many unused pool accounts exist", () =>
     const r = await fetch(`${base}/admin/pools`, { method: "POST", body: await signedBody(owner) });
     assert.equal(r.status, 429);
   }));
+
+test("demo wallets: lists only valid public addresses, empty when not configured", async () => {
+  const good = ethers.Wallet.createRandom().address;
+  await withServer(makeDeps({ demoWallets: () => [good, "not-an-address", ""] }), async (base) => {
+    const j = (await (await fetch(`${base}/demo-wallets`)).json()) as { wallets: string[] };
+    assert.deepEqual(j.wallets, [good]);
+  });
+  await withServer(makeDeps(), async (base) => {
+    const j = (await (await fetch(`${base}/demo-wallets`)).json()) as { wallets: string[] };
+    assert.deepEqual(j.wallets, []);
+  });
+});
