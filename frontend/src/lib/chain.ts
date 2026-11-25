@@ -3,7 +3,12 @@ import { ethers } from "ethers";
 import marketsAbi from "@/abi/PythiaMarkets.abi.json";
 import { config } from "@/config";
 
-export const provider = new ethers.JsonRpcProvider(config.rpcUrl, config.chainId, { staticNetwork: true });
+export const provider = new ethers.JsonRpcProvider(config.rpcUrl, config.chainId, {
+  staticNetwork: true,
+  // Public RPCs reject large JSON-RPC batches (api.avax-test.network answers HTTP 500 above ~40 calls). ethers bundles
+  // parallel calls into one batch, so cap it: the markets list reads every market at once and grows with the market count.
+  batchMaxCount: 20,
+});
 export const marketsContract = new ethers.Contract(config.addresses.markets, marketsAbi, provider);
 
 /** The public RPC occasionally times out; retry with backoff before surfacing an error. */
